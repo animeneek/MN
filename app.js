@@ -1,24 +1,36 @@
-// app.js
-
 const API_KEY = 'e3afd4c89e3351edad9e875ff7a01f0c';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_ORIGINAL = 'https://image.tmdb.org/t/p/original';
 const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 
-// Load Hero Slider (Trending Movies)
+async function fetchGenres() {
+  const res = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}`);
+  const data = await res.json();
+  return data.genres.reduce((acc, g) => {
+    acc[g.id] = g.name;
+    return acc;
+  }, {});
+}
+
+// HERO SLIDER
 async function loadHeroSlider() {
   const res = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
   const data = await res.json();
+  const genresMap = await fetchGenres();
   const sliderWrapper = document.getElementById('sliderWrapper');
 
-  sliderWrapper.innerHTML = data.results.slice(0, 5).map(movie => `
-    <div class="absolute inset-0 bg-cover bg-center animate-fade" style="background-image: url('${IMG_ORIGINAL + movie.backdrop_path}')">
-      <div class="absolute bottom-10 left-10 z-30 text-white max-w-xl">
-        <h2 class="text-2xl md:text-4xl font-bold mb-2">${movie.title}</h2>
-        <p class="hidden md:block text-sm md:text-base">${movie.overview.slice(0, 180)}...</p>
+  sliderWrapper.innerHTML = data.results.slice(0, 5).map(movie => {
+    const genreNames = movie.genre_ids.map(id => genresMap[id]).join(', ');
+    return `
+      <div class="absolute inset-0 bg-cover bg-center animate-fade" style="background-image: url('${IMG_ORIGINAL + movie.backdrop_path}')">
+        <div class="absolute bottom-10 left-10 z-30 text-white max-w-xl">
+          <h2 class="text-2xl md:text-4xl font-bold mb-2">${movie.title}</h2>
+          <p class="text-sm opacity-80 mb-1">${genreNames}</p>
+          <p class="hidden md:block text-sm md:text-base">${movie.overview.slice(0, 180)}...</p>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 
   startSlider();
 }
@@ -35,17 +47,15 @@ function startSlider() {
   }, 5000);
 }
 
-// Load Neek Picks
-async function loadNeekPicks(type = 'TRENDING') {
-  let url = '';
-  if (type === 'TRENDING') {
-    url = `${BASE_URL}/trending/movie/week?api_key=${API_KEY}`;
-  } else if (type === 'POPULAR') {
-    url = `${BASE_URL}/movie/popular?api_key=${API_KEY}`;
-  } else if (type === 'TOP') {
-    url = `${BASE_URL}/movie/top_rated?api_key=${API_KEY}`;
-  }
+// Format YYYY-MM-DD to MMM DD, YYYY
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+}
 
+// NEEK PICKS
+async function loadNeekPicks(type = 'POPULAR') {
+  const url = `${BASE_URL}/movie/${type.toLowerCase()}?api_key=${API_KEY}`;
   const res = await fetch(url);
   const data = await res.json();
   const container = document.getElementById('movieSection');
@@ -55,13 +65,13 @@ async function loadNeekPicks(type = 'TRENDING') {
       <img src="${IMG_W500 + movie.poster_path}" alt="${movie.title}" class="w-full h-auto">
       <div class="p-2 text-sm text-white">
         <h3 class="font-semibold">${movie.title}</h3>
-        <p class="opacity-60 text-xs">${movie.release_date}</p>
+        <p class="opacity-60 text-xs">${formatDate(movie.release_date)}</p>
       </div>
     </div>
   `).join('');
 }
 
-// Tab Events
+// Tabs
 document.addEventListener('DOMContentLoaded', () => {
   loadHeroSlider();
   loadNeekPicks();
