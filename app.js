@@ -3,6 +3,20 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_ORIGINAL = 'https://image.tmdb.org/t/p/original';
 const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 
+// Dynamically load header.html
+fetch('header.html')
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById('nav-placeholder').innerHTML = data;
+  });
+
+// Format YYYY-MM-DD to MMM DD, YYYY
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+}
+
+// Get movie genres as a { id: name } map
 async function fetchGenres() {
   const res = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}`);
   const data = await res.json();
@@ -26,7 +40,7 @@ async function loadHeroSlider() {
         <div class="absolute bottom-10 left-10 z-30 text-white max-w-xl">
           <h2 class="text-2xl md:text-4xl font-bold mb-2">${movie.title}</h2>
           <p class="text-sm opacity-80 mb-1">${genreNames}</p>
-          <p class="hidden md:block text-sm md:text-base">${movie.overview.slice(0, 180)}...</p>
+          <p class="hidden md:block text-sm md:text-base">${movie.overview?.slice(0, 180)}...</p>
         </div>
       </div>
     `;
@@ -47,13 +61,7 @@ function startSlider() {
   }, 5000);
 }
 
-// Format YYYY-MM-DD to MMM DD, YYYY
-function formatDate(dateStr) {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-}
-
-// NEEK PICKS
+// NEEK PICKS Section
 async function loadNeekPicks(type = 'POPULAR') {
   const url = `${BASE_URL}/movie/${type.toLowerCase()}?api_key=${API_KEY}`;
   const res = await fetch(url);
@@ -71,16 +79,22 @@ async function loadNeekPicks(type = 'POPULAR') {
   `).join('');
 }
 
-// Tabs
+// Tab handling + Initial load
 document.addEventListener('DOMContentLoaded', () => {
   loadHeroSlider();
   loadNeekPicks();
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.style.backgroundColor = '#222');
-      btn.style.backgroundColor = '#ff4444';
-      loadNeekPicks(btn.dataset.type);
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('bg-[#ff4444]', 'text-white');
+        b.classList.add('bg-transparent');
+      });
+      btn.classList.remove('bg-transparent');
+      btn.classList.add('bg-[#ff4444]', 'text-white');
+
+      const type = btn.dataset.type;
+      loadNeekPicks(type);
     });
   });
 });
