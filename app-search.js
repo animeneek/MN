@@ -4,12 +4,11 @@ const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 const FALLBACK_IMG = 'https://github.com/animeneek/MN/blob/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png?raw=true';
 
 let currentPage = 1;
-let isLoading = false;
-let hasMoreResults = true;
 let currentQuery = '';
 let selectedGenres = [];
 let selectedType = 'all';
 let genreMap = {};
+let isLoading = false;
 
 function getQueryParam(param) {
   return new URLSearchParams(window.location.search).get(param);
@@ -20,82 +19,79 @@ function formatDate(dateStr) {
   return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
 }
 
-function fetchGenres() {
-  fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}`)
-    .then(res => res.json())
-    .then(data => {
-      genreMap = {};
-      data.genres.forEach(g => genreMap[g.id] = g.name);
-      const genreOptions = document.getElementById('genreOptions');
-      genreOptions.innerHTML = data.genres.map(g => `
-        <label class="flex items-center space-x-2 text-sm text-white">
-          <input type="checkbox" value="${g.id}" class="genre-checkbox" />
-          <span>${g.name}</span>
-        </label>
-      `).join('');
-    });
+async function fetchGenres() {
+  const movieRes = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}`).then(res => res.json());
+  const tvRes = await fetch(`${BASE_URL}/genre/tv/list?api_key=${API_KEY}`).then(res => res.json());
+
+  const combined = [...movieRes.genres, ...tvRes.genres];
+  const uniqueGenres = Array.from(new Map(combined.map(g => [g.id, g])).values());
+
+  genreMap = {};
+  uniqueGenres.forEach(g => genreMap[g.id] = g.name);
+
+  const genreOptions = document.getElementById('genreOptions');
+  genreOptions.innerHTML = uniqueGenres.map(g => `
+    <label class="flex items-center space-x-2 text-sm text-white">
+      <input type="checkbox" value="${g.id}" class="genre-checkbox" />
+      <span>${g.name}</span>
+    </label>
+  `).join('');
 }
 
-function searchMovies(query, page = 1, append = false) {
-  if (isLoading || !hasMoreResults) return;
+async function searchMovies(query, page = 1, append = false) {
+  if (isLoading) return;
   isLoading = true;
 
   const results = document.getElementById('results');
   if (!append) results.innerHTML = '<p class="col-span-full text-center text-gray-400">Searching...</p>';
 
   let url = `${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`;
+  const res = await fetch(url);
+  const data = await res.json();
 
-  fetch(url)
-    .then(res => res.json())
-    .then(data => {
-      const filtered = data.results.filter(item => {
-        const typeMatch =
-          selectedType === 'all' ||
-          (selectedType === 'movie' && item.media_type === 'movie') ||
-          (selectedType === 'tv' && item.media_type === 'tv');
+  const filtered = data.results.filter(item => {
+    if (item.media_type !== 'movie' && item.media_type !== 'tv') return false;
 
-        const genreMatch = selectedGenres.length === 0 || (
-          item.genre_ids && selectedGenres.every(id => item.genre_ids.includes(parseInt(id)))
-        );
+    const typeMatch =
+      selectedType === 'all' ||
+      (selectedType === 'movie' && item.media_type === 'movie') ||
+      (selectedType === 'tv' && item.media_type === 'tv');
 
-        return typeMatch && genreMatch;
-      });
+    const genreMatch =
+      selectedGenres.length === 0 ||
+      (item.genre_ids && selectedGenres.every(id => item.genre_ids.includes(parseInt(id))));
 
-      if (!append && !filtered.length) {
-        results.innerHTML = '<p class="col-span-full text-center text-gray-500">No results found.</p>';
-        return;
-      }
+    return typeMatch && genreMatch;
+  });
 
-      const html = filtered.map(item => {
-        const title = item.title || item.name || 'Untitled';
-        const img = item.poster_path ? IMG_W500 + item.poster_path : FALLBACK_IMG;
-        const date = item.release_date || item.first_air_date || '';
-        return `
-          <div class="rounded overflow-hidden shadow-md bg-[#111] hover:scale-105 transition transform duration-300 cursor-pointer" data-aos="fade-up">
-            <img src="${img}" alt="${title}" class="w-full h-auto" onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
-            <div class="p-2 text-sm text-white">
-              <h3 class="font-semibold">${title}</h3>
-              <p class="opacity-60 text-xs">${formatDate(date)}</p>
-            </div>
-          </div>`;
-      }).join('');
+  if (!append && filtered.length === 0) {
+    results.innerHTML = '<p class="col-span-full text-center text-gray-500">No results found.</p>';
+    isLoading = false;
+    return;
+  }
 
-      if (append) {
-        results.insertAdjacentHTML('beforeend', html);
-      } else {
-        results.innerHTML = html;
-      }
+  const html = filtered.map(item => {
+    const title = item.title || item.name || 'Untitled';
+    const img = item.poster_path ? IMG_W500 + item.poster_path : FALLBACK_IMG;
+    const date = item.release_date || item.first_air_date || '';
+    return `
+      <div class="rounded overflow-hidden shadow-md bg-[#111] hover:scale-105 transition transform duration-300 cursor-pointer" data-aos="fade-up">
+        <img src="${img}" alt="${title}" class="w-full h-auto" onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
+        <div class="p-2 text-sm text-white">
+          <h3 class="font-semibold">${title}</h3>
+          <p class="opacity-60 text-xs">${formatDate(date)}</p>
+        </div>
+      </div>`;
+  }).join('');
 
-      hasMoreResults = data.page < data.total_pages;
-      currentPage = data.page + 1;
-    })
-    .catch(err => {
-      console.error(err);
-      results.innerHTML = '<p class="text-red-500 col-span-full text-center">Failed to fetch results.</p>';
-    })
-    .finally(() => {
-      isLoading = false;
-    });
+  if (append) {
+    results.insertAdjacentHTML('beforeend', html);
+  } else {
+    results.innerHTML = html;
+  }
+
+  currentPage++;
+  isLoading = false;
 }
 
 function setupDropdowns() {
@@ -103,7 +99,6 @@ function setupDropdowns() {
   const genreDropdown = document.getElementById('genreDropdown');
 
   genreBtn.addEventListener('click', () => genreDropdown.classList.toggle('hidden'));
-
   document.addEventListener('click', (e) => {
     if (!genreDropdown.contains(e.target) && e.target !== genreBtn) genreDropdown.classList.add('hidden');
   });
@@ -117,12 +112,12 @@ function setupFilters() {
         ? selectedGenres.map(id => genreMap[id]).join(', ')
         : 'Select Genres';
     }
+
     if (e.target.id === 'typeSelect') {
       selectedType = e.target.value;
     }
 
     currentPage = 1;
-    hasMoreResults = true;
     searchMovies(currentQuery, 1, false);
   });
 }
@@ -141,8 +136,8 @@ function setupSearchHandler() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  fetchGenres();
+document.addEventListener('DOMContentLoaded', async () => {
+  await fetchGenres();
   setupDropdowns();
   setupFilters();
   setupSearchHandler();
