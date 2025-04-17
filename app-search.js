@@ -45,17 +45,23 @@ async function searchMovies(query, page = 1, append = false) {
   const results = document.getElementById('results');
   if (!append) results.innerHTML = '<p class="col-span-full text-center text-gray-400">Searching...</p>';
 
-  let url = `${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`;
+  let endpoint = '';
+  if (selectedType === 'movie') endpoint = '/search/movie';
+  else if (selectedType === 'tv') endpoint = '/search/tv';
+  else endpoint = '/search/multi';
+
+  const url = `${BASE_URL}${endpoint}?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`;
   const res = await fetch(url);
   const data = await res.json();
 
   const filtered = data.results.filter(item => {
-    if (item.media_type !== 'movie' && item.media_type !== 'tv') return false;
+    const mediaType = item.media_type || selectedType;
+    if (mediaType !== 'movie' && mediaType !== 'tv') return false;
 
     const typeMatch =
       selectedType === 'all' ||
-      (selectedType === 'movie' && item.media_type === 'movie') ||
-      (selectedType === 'tv' && item.media_type === 'tv');
+      (selectedType === 'movie' && mediaType === 'movie') ||
+      (selectedType === 'tv' && mediaType === 'tv');
 
     const genreMatch =
       selectedGenres.length === 0 ||
