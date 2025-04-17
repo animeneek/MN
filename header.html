@@ -1,28 +1,19 @@
-<header class="bg-[#111] text-white shadow">
-  <div class="max-w-screen-xl mx-auto flex items-center justify-between p-4">
-    <a href="index.html" class="text-xl font-bold text-white">MovieNeek</a>
-
-    <div class="flex-1 max-w-md mx-4">
-      <input
-        id="searchBox"
-        type="text"
-        placeholder="Search movies or series..."
-        class="w-full p-2 rounded bg-[#222] text-white placeholder-gray-400 focus:outline-none"
-        onkeypress="if(event.key === 'Enter') { executeSearch(); }"
-      />
-    </div>
-
-    <nav class="space-x-4">
-      <a href="index.html" class="hover:underline">Home</a>
-      <a href="search.html" class="hover:underline">Browse</a>
-    </nav>
+<!-- header.html -->
+<nav class="relative bg-gray-100 dark:bg-black shadow z-10 px-4 py-3 flex flex-col items-center sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
+  <!-- Logo -->
+  <div class="flex-shrink-0 flex justify-center sm:justify-start w-full sm:w-auto">
+    <a href="index.html" class="flex items-center">
+      <img src="assets/Movieneek_Raider Crusader_001.png" alt="MovieNeek Logo" class="h-4 sm:h-10">
+    </a>
   </div>
-</header>
 
-<script>
-  function executeSearch() {
-    const query = document.getElementById('searchBox').value.trim();
-    const url = `search.html?q=${encodeURIComponent(query)}`;
-    window.location.href = url;
-  }
-</script>
+  <!-- Search Bar -->
+  <div class="w-full sm:absolute sm:left-1/2 sm:top-1/2 sm:transform sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-[60%] max-w-2xl px-2 sm:px-0">
+    <input 
+      type="text" 
+      id="searchBox" 
+      placeholder="Search..." 
+      class="w-full px-5 py-2 rounded border border-white bg-gray-100 dark:bg-[#222] text-black dark:text-white focus:ring-2 focus:ring-[#ff4444] focus:border-[#ff4444] outline-none transition-all duration-200"
+    />
+  </div>
+</nav>
