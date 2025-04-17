@@ -143,29 +143,28 @@ function setupFilters() {
   });
 }
 
-function setupSearchHandler() {
-  const searchBox = document.getElementById('searchBox');
-  if (searchBox) {
-    searchBox.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        const q = searchBox.value.trim();
-        window.location.href = `search.html?q=${encodeURIComponent(q)}`;
-      }
-    });
-  }
+function attachSearchInputHandler() {
+  const input = document.querySelector('#searchBox');
+  if (!input) return;
+
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      const q = input.value.trim();
+      window.location.href = `search.html?q=${encodeURIComponent(q)}`;
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
   await fetchGenres();
   setupDropdowns();
   setupFilters();
-  setupSearchHandler();
 
   fetch('header.html')
     .then(res => res.text())
     .then(html => {
       document.getElementById('nav-placeholder').innerHTML = html;
-      setupSearchHandler();
+      attachSearchInputHandler(); // After header loads
     });
 
   currentQuery = getQueryParam('q') || '';
