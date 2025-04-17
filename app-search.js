@@ -1,124 +1,110 @@
-const TMDB_API_KEY = 'e3afd4c89e3351edad9e875ff7a01f0c';
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+const API_KEY = 'e3afd4c89e3351edad9e875ff7a01f0c';
+const BASE_URL = 'https://api.themoviedb.org/3';
+const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 
-let currentQuery = '';
-let selectedType = 'all'; // all | movie | tv
-let selectedGenre = '';
-let movieGenres = [];
-let tvGenres = [];
-
-const resultsContainer = document.getElementById('searchResults');
-const genreDropdown = document.getElementById('genreDropdown');
-const typeDropdown = document.getElementById('typeDropdown');
+const searchBox = document.getElementById('searchBox');
 const genreFilter = document.getElementById('genreFilter');
 const typeFilter = document.getElementById('typeFilter');
-const searchInput = document.getElementById('searchBox');
+const resultsContainer = document.getElementById('results');
+const navPlaceholder = document.getElementById('nav-placeholder');
 
-// Get genres
-async function fetchGenres() {
-  const [movieGenreRes, tvGenreRes] = await Promise.all([
-    fetch(`${TMDB_BASE_URL}/genre/movie/list?api_key=${TMDB_API_KEY}`).then(res => res.json()),
-    fetch(`${TMDB_BASE_URL}/genre/tv/list?api_key=${TMDB_API_KEY}`).then(res => res.json())
-  ]);
+let allGenres = {};
 
-  movieGenres = movieGenreRes.genres;
-  tvGenres = tvGenreRes.genres;
+async function loadGenres() {
+  const movieGenres = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}`).then(r => r.json());
+  const tvGenres = await fetch(`${BASE_URL}/genre/tv/list?api_key=${API_KEY}`).then(r => r.json());
 
-  const allGenres = [...movieGenres, ...tvGenres];
-  const uniqueGenres = Array.from(new Map(allGenres.map(item => [item.id, item])).values());
+  [...movieGenres.genres, ...tvGenres.genres].forEach(genre => {
+    allGenres[genre.id] = genre.name;
+  });
 
-  genreDropdown.innerHTML = `<option value="">All Genres</option>` + uniqueGenres.map(genre =>
-    `<option value="${genre.id}">${genre.name}</option>`
-  ).join('');
+  const uniqueGenres = Object.entries(allGenres).map(([id, name]) =>
+    `<option value="${id}">${name}</option>`
+  );
+  genreFilter.innerHTML += uniqueGenres.join('');
 }
 
-// Search
-async function searchTMDB(query) {
-  resultsContainer.innerHTML = '<p class="col-span-full text-center text-gray-500">Loading...</p>';
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return isNaN(date) ? '' : date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+}
 
-  let results = [];
+async function searchTMDB(query, type = 'all', genreId = '') {
+  resultsContainer.innerHTML = '<p class="col-span-full text-center text-gray-400">Loading...</p>';
 
-  if (selectedType === 'movie' || selectedType === 'all') {
-    const movieRes = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`);
-    const movieData = await movieRes.json();
-    const filteredMovies = selectedGenre
-      ? movieData.results.filter(item => item.genre_ids.includes(Number(selectedGenre)))
-      : movieData.results;
-    results.push(...filteredMovies.map(item => ({ ...item, media_type: 'movie' })));
+  let endpoints = [];
+  if (type === 'all' || type === 'movie') {
+    endpoints.push(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+  }
+  if (type === 'all' || type === 'tv') {
+    endpoints.push(`${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
   }
 
-  if (selectedType === 'tv' || selectedType === 'all') {
-    const tvRes = await fetch(`${TMDB_BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`);
-    const tvData = await tvRes.json();
-    const filteredTV = selectedGenre
-      ? tvData.results.filter(item => item.genre_ids.includes(Number(selectedGenre)))
-      : tvData.results;
-    results.push(...filteredTV.map(item => ({ ...item, media_type: 'tv' })));
-  }
+  const responses = await Promise.all(endpoints.map(url => fetch(url).then(r => r.json())));
+  const allResults = responses.flatMap(res => res.results || []);
 
-  if (!results.length) {
+  const filtered = allResults.filter(item =>
+    !genreId || item.genre_ids.includes(Number(genreId))
+  );
+
+  if (!filtered.length) {
     resultsContainer.innerHTML = '<p class="col-span-full text-center text-gray-400">No results found.</p>';
     return;
   }
 
-  displayResults(results);
-}
-
-function displayResults(results) {
-  resultsContainer.innerHTML = results.map(item => {
-    const title = item.title || item.name || 'Untitled';
-    const img = item.poster_path ? `${IMAGE_BASE_URL}${item.poster_path}` : 'assets/fallback.jpg';
+  const html = filtered.map(item => {
+    const title = item.title || item.name;
+    const date = item.release_date || item.first_air_date;
+    const image = item.poster_path ? IMG_W500 + item.poster_path : 'assets/fallback.jpg';
     return `
-      <a href="details.html?type=${item.media_type}&id=${item.id}" class="bg-white dark:bg-[#1e1e1e] rounded shadow hover:scale-105 transition transform duration-200 overflow-hidden" data-aos="fade-up">
-        <div class="w-full aspect-[2/3] overflow-hidden">
-          <img src="${img}" alt="${title}" class="w-full h-full object-cover" />
+      <div class="bg-[#111] rounded shadow overflow-hidden hover:scale-105 transition duration-300">
+        <img src="${image}" alt="${title}" class="w-full aspect-[2/3] object-cover">
+        <div class="p-2 text-sm text-white">
+          <h3 class="font-semibold truncate">${title}</h3>
+          <p class="opacity-60 text-xs">${formatDate(date)}</p>
         </div>
-        <div class="p-2 text-sm text-center font-semibold">${title}</div>
-      </a>
+      </div>
     `;
   }).join('');
+
+  resultsContainer.innerHTML = html;
 }
 
-function updateURLQuery(query) {
-  const url = new URL(window.location.href);
-  url.searchParams.set('q', query);
-  history.pushState({}, '', url);
-}
-
-// Event listeners
-searchInput.addEventListener('keypress', e => {
-  if (e.key === 'Enter') {
-    const query = searchInput.value.trim();
-    if (query || query === '') {
-      currentQuery = query;
-      updateURLQuery(currentQuery);
-      searchTMDB(currentQuery);
+function setupHandlers() {
+  // Listen for Enter key on search
+  document.addEventListener('keypress', e => {
+    if (e.key === 'Enter') {
+      const query = (document.getElementById('searchBox')?.value || '').trim();
+      const type = typeFilter.value;
+      const genre = genreFilter.value;
+      searchTMDB(query, type, genre);
     }
-  }
-});
+  });
 
-typeFilter.addEventListener('change', () => {
-  selectedType = typeFilter.value;
-  if (currentQuery !== '') {
-    searchTMDB(currentQuery);
-  }
-});
+  // Filter changes
+  genreFilter.addEventListener('change', () => {
+    const query = new URLSearchParams(window.location.search).get('q') || '';
+    searchTMDB(query, typeFilter.value, genreFilter.value);
+  });
 
-genreFilter.addEventListener('change', () => {
-  selectedGenre = genreFilter.value;
-  if (currentQuery !== '') {
-    searchTMDB(currentQuery);
-  }
-});
+  typeFilter.addEventListener('change', () => {
+    const query = new URLSearchParams(window.location.search).get('q') || '';
+    searchTMDB(query, typeFilter.value, genreFilter.value);
+  });
+}
 
-// Load from URL param
-window.addEventListener('DOMContentLoaded', () => {
-  fetchGenres();
-  const params = new URLSearchParams(window.location.search);
-  currentQuery = params.get('q') || '';
-  searchInput.value = currentQuery;
-  if (currentQuery) {
-    searchTMDB(currentQuery);
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadGenres();
+  setupHandlers();
+
+  const query = new URLSearchParams(window.location.search).get('q') || '';
+  searchTMDB(query, typeFilter.value, genreFilter.value);
+
+  if (navPlaceholder) {
+    fetch('header.html')
+      .then(res => res.text())
+      .then(html => {
+        navPlaceholder.innerHTML = html;
+      });
   }
 });
