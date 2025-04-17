@@ -3,11 +3,24 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_ORIGINAL = 'https://image.tmdb.org/t/p/original';
 const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 
-// Dynamically load header.html
+// Dynamically load header.html and add search logic
 fetch('header.html')
   .then(res => res.text())
   .then(data => {
     document.getElementById('nav-placeholder').innerHTML = data;
+
+    // Add search box handler after header is injected
+    const searchBox = document.getElementById('searchBox');
+    if (searchBox) {
+      searchBox.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          const query = e.target.value.trim();
+          if (query) {
+            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+          }
+        }
+      });
+    }
   });
 
 // Format YYYY-MM-DD to MMM DD, YYYY
