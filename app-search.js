@@ -150,6 +150,7 @@ function attachSearchInputHandler() {
   input.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
       const q = input.value.trim();
+      // Always redirect, even if empty
       window.location.href = `search.html?q=${encodeURIComponent(q)}`;
     }
   });
@@ -164,7 +165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     .then(res => res.text())
     .then(html => {
       document.getElementById('nav-placeholder').innerHTML = html;
-      attachSearchInputHandler(); // After header loads
+      attachSearchInputHandler(); // Attach after header loads
     });
 
   currentQuery = getQueryParam('q') || '';
