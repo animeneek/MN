@@ -38,6 +38,16 @@ async function fetchGenres() {
   `).join('');
 }
 
+async function fetchAllContent(page = 1) {
+  const movieURL = `${BASE_URL}/discover/movie?api_key=${API_KEY}&page=${page}`;
+  const tvURL = `${BASE_URL}/discover/tv?api_key=${API_KEY}&page=${page}`;
+  const [movieRes, tvRes] = await Promise.all([
+    fetch(movieURL).then(res => res.json()),
+    fetch(tvURL).then(res => res.json())
+  ]);
+  return [...movieRes.results.map(r => ({ ...r, media_type: 'movie' })), ...tvRes.results.map(r => ({ ...r, media_type: 'tv' }))];
+}
+
 async function searchMovies(query, page = 1, append = false) {
   if (isLoading) return;
   isLoading = true;
@@ -45,16 +55,19 @@ async function searchMovies(query, page = 1, append = false) {
   const results = document.getElementById('results');
   if (!append) results.innerHTML = '<p class="col-span-full text-center text-gray-400">Searching...</p>';
 
-  let endpoint = '';
-  if (selectedType === 'movie') endpoint = '/search/movie';
-  else if (selectedType === 'tv') endpoint = '/search/tv';
-  else endpoint = '/search/multi';
+  let data = [];
 
-  const url = `${BASE_URL}${endpoint}?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`;
-  const res = await fetch(url);
-  const data = await res.json();
+  if (query) {
+    let endpoint = selectedType === 'movie' ? 'movie' : selectedType === 'tv' ? 'tv' : 'multi';
+    const url = `${BASE_URL}/search/${endpoint}?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}`;
+    const res = await fetch(url);
+    const json = await res.json();
+    data = json.results || [];
+  } else {
+    data = await fetchAllContent(page);
+  }
 
-  const filtered = data.results.filter(item => {
+  const filtered = data.filter(item => {
     const mediaType = item.media_type || selectedType;
     if (mediaType !== 'movie' && mediaType !== 'tv') return false;
 
@@ -136,9 +149,7 @@ function setupSearchHandler() {
     searchBox.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         const q = searchBox.value.trim();
-        if (q) {
-          window.location.href = `search.html?q=${encodeURIComponent(q)}`;
-        }
+        window.location.href = `search.html?q=${encodeURIComponent(q)}`;
       }
     });
   }
@@ -158,7 +169,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
   currentQuery = getQueryParam('q') || '';
-  if (currentQuery) {
+  if (currentQuery !== null) {
     document.getElementById('searchBox')?.setAttribute('value', currentQuery);
     searchMovies(currentQuery, 1, false);
   }
