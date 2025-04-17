@@ -82,7 +82,9 @@ async function searchMovies(query, page = 1, append = false) {
     const date = item.release_date || item.first_air_date || '';
     return `
       <div class="rounded overflow-hidden shadow-md bg-[#111] hover:scale-105 transition transform duration-300 cursor-pointer" data-aos="fade-up">
-        <img src="${img}" alt="${title}" class="w-full h-auto" onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
+        <div class="w-full aspect-[2/3] bg-black">
+          <img src="${img}" alt="${title}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
+        </div>
         <div class="p-2 text-sm text-white">
           <h3 class="font-semibold">${title}</h3>
           <p class="opacity-60 text-xs">${formatDate(date)}</p>
