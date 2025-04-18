@@ -7,6 +7,7 @@ let currentPage = 1;
 let currentQuery = '';
 let selectedGenres = [];
 let selectedType = 'all';
+let selectedYear = '';
 let genreMap = {};
 let isLoading = false;
 
@@ -80,7 +81,10 @@ async function searchMovies(query, page = 1, append = false) {
       selectedGenres.length === 0 ||
       (item.genre_ids && selectedGenres.every(id => item.genre_ids.includes(parseInt(id))));
 
-    return typeMatch && genreMatch;
+    const year = (item.release_date || item.first_air_date || '').split('-')[0];
+    const yearMatch = selectedYear === '' || year === selectedYear;
+
+    return typeMatch && genreMatch && yearMatch;
   });
 
   if (!append && filtered.length === 0) {
@@ -138,6 +142,10 @@ function setupFilters() {
       selectedType = e.target.value;
     }
 
+    if (e.target.id === 'yearSelect') {
+      selectedYear = e.target.value;
+    }
+
     currentPage = 1;
     searchMovies(currentQuery, 1, false);
   });
@@ -156,7 +164,21 @@ function attachSearchInputHandler() {
   });
 }
 
+function populateYearDropdown() {
+  const yearSelect = document.getElementById('yearSelect');
+  if (!yearSelect) return;
+
+  const currentYear = new Date().getFullYear();
+  for (let y = currentYear; y >= 1900; y--) {
+    const option = document.createElement('option');
+    option.value = y;
+    option.textContent = y;
+    yearSelect.appendChild(option);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+  populateYearDropdown();
   await fetchGenres();
   setupDropdowns();
   setupFilters();
