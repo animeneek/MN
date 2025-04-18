@@ -97,8 +97,9 @@ async function searchMovies(query, page = 1, append = false) {
     const title = item.title || item.name || 'Untitled';
     const img = item.poster_path ? IMG_W500 + item.poster_path : FALLBACK_IMG;
     const date = item.release_date || item.first_air_date || '';
+    const type = item.media_type || selectedType;
     return `
-      <div class="rounded overflow-hidden shadow-md bg-[#111] hover:scale-105 transition transform duration-300 cursor-pointer" data-aos="fade-up">
+      <div class="rounded overflow-hidden shadow-md bg-[#111] hover:scale-105 transition transform duration-300 cursor-pointer content-card" data-id="${item.id}" data-type="${type}" data-aos="fade-up">
         <div class="w-full aspect-[2/3] bg-black">
           <img src="${img}" alt="${title}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
         </div>
@@ -114,6 +115,14 @@ async function searchMovies(query, page = 1, append = false) {
   } else {
     results.innerHTML = html;
   }
+
+  document.querySelectorAll('.content-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.dataset.id;
+      const type = card.dataset.type;
+      window.location.href = `content.html?id=${id}&type=${type}`;
+    });
+  });
 
   currentPage++;
   isLoading = false;
@@ -158,7 +167,6 @@ function attachSearchInputHandler() {
   input.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
       const q = input.value.trim();
-      // Always redirect, even if empty
       window.location.href = `search.html?q=${encodeURIComponent(q)}`;
     }
   });
@@ -187,7 +195,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     .then(res => res.text())
     .then(html => {
       document.getElementById('nav-placeholder').innerHTML = html;
-      attachSearchInputHandler(); // Attach after header loads
+      attachSearchInputHandler();
     });
 
   currentQuery = getQueryParam('q') || '';
