@@ -9,7 +9,6 @@ fetch('header.html')
   .then(data => {
     document.getElementById('nav-placeholder').innerHTML = data;
 
-    // Add search box handler after header is injected
     const searchBox = document.getElementById('searchBox');
     if (searchBox) {
       searchBox.addEventListener('keypress', (e) => {
@@ -82,7 +81,7 @@ async function loadNeekPicks(type = 'POPULAR') {
   const container = document.getElementById('movieSection');
 
   container.innerHTML = data.results.slice(0, 18).map(movie => `
-    <div class="rounded overflow-hidden shadow-md bg-[#111] hover:scale-105 transition transform duration-300 cursor-pointer">
+    <div class="rounded overflow-hidden shadow-md bg-[#111] hover:scale-105 transition transform duration-300 cursor-pointer content-card" data-id="${movie.id}" data-type="movie">
       <img src="${IMG_W500 + movie.poster_path}" alt="${movie.title}" class="w-full h-auto">
       <div class="p-2 text-sm text-white">
         <h3 class="font-semibold">${movie.title}</h3>
@@ -90,6 +89,14 @@ async function loadNeekPicks(type = 'POPULAR') {
       </div>
     </div>
   `).join('');
+
+  container.querySelectorAll('.content-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.dataset.id;
+      const type = card.dataset.type;
+      window.location.href = `content.html?id=${id}&type=${type}`;
+    });
+  });
 }
 
 // Tab handling + Initial load
