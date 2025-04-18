@@ -1,30 +1,31 @@
-const API_KEY = 'd3e7a7b0a63a4a2cbd5c395de77fabc7';
+const API_KEY = 'e3afd4c89e3351edad9e875ff7a01f0c';
 const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type');
 const contentId = urlParams.get('id');
 
 function openModal(embedUrl) {
-  document.getElementById('modalIframe').src = embedUrl;
+  document.getElementById('playerFrame').src = embedUrl;
   document.getElementById('modal').classList.remove('hidden');
 }
-
 function closeModal() {
-  document.getElementById('modalIframe').src = '';
   document.getElementById('modal').classList.add('hidden');
+  document.getElementById('playerFrame').src = '';
 }
 
 async function fetchContentDetails(type, id) {
   const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}&language=en-US`);
   return await res.json();
 }
-
 async function fetchCredits(type, id) {
   const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/credits?api_key=${API_KEY}`);
   return await res.json();
 }
-
 async function fetchRecommendations(type, id) {
   const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/recommendations?api_key=${API_KEY}`);
+  return await res.json();
+}
+async function fetchSeasonEpisodes(tvId, seasonNum) {
+  const res = await fetch(`https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNum}?api_key=${API_KEY}`);
   return await res.json();
 }
 
@@ -56,7 +57,7 @@ function renderCast(cast) {
 function renderRecommended(results) {
   const items = results.slice(0, 8).map(item => `
     <a href="content.html?type=${contentType}&id=${item.id}" class="rounded shadow overflow-hidden hover:scale-105 transition block">
-      <img src="https://image.tmdb.org/t/p/w342${item.poster_path}" class="w-full aspect-[2/3] object-cover" alt="${item.title || item.name}" />
+      <img src="https://image.tmdb.org/t/p/w300${item.poster_path}" class="w-full aspect-[2/3] object-cover" alt="${item.title || item.name}" />
       <div class="p-2 text-sm text-center">${item.title || item.name}</div>
     </a>
   `).join('');
@@ -65,38 +66,41 @@ function renderRecommended(results) {
 
 function renderSources() {
   document.getElementById('tab-sources').innerHTML = `
-    <button class="bg-redmain hover:bg-red-700 text-white px-4 py-2 rounded shadow" onclick="openModal('https://player.embed-api.stream/?id=${contentId}&type=movie')">Watch on Source 1</button>
+    <button class="bg-redmain hover:opacity-90 text-white px-4 py-2 rounded shadow" onclick="openModal('https://player.embed-api.stream/?id=${contentId}&type=movie')">
+      Watch on Source 1
+    </button>
   `;
 }
 
 function renderAdditionalSources() {
   document.getElementById('tab-additional-sources').innerHTML = `
-    <p class="text-gray-400 italic">No Additional Sources Yet</p>
+    <p class="text-sm mb-2">No Additional Sources Yet</p>
   `;
 }
 
-async function renderEpisodes(tvData) {
+async function renderEpisodes(content) {
   const container = document.getElementById('tab-episodes');
   container.innerHTML = '';
 
-  for (const season of tvData.seasons) {
-    if (!season.season_number || season.season_number === 0) continue;
-
-    const seasonData = await fetch(`https://api.themoviedb.org/3/tv/${contentId}/season/${season.season_number}?api_key=${API_KEY}&language=en-US`);
-    const seasonJson = await seasonData.json();
-
-    const seasonHeader = `<h2 class="text-xl font-semibold mb-3 mt-6">Season ${season.season_number}</h2>`;
-    const episodeCards = seasonJson.episodes.map(ep => `
-      <div class="bg-gray-800 rounded overflow-hidden shadow">
-        <img src="https://image.tmdb.org/t/p/w300${ep.still_path}" class="w-full aspect-video object-cover cursor-pointer" onclick="openModal('https://player.embed-api.stream/?id=${contentId}&s=${season.season_number}&e=${ep.episode_number}')">
-        <div class="p-2">
-          <p class="font-semibold text-sm">Episode ${ep.episode_number}: ${ep.name}</p>
-          <p class="text-xs text-gray-400">${ep.overview || 'No description available.'}</p>
-        </div>
+  for (const season of content.seasons) {
+    if (season.season_number === 0) continue;
+    const seasonData = await fetchSeasonEpisodes(contentId, season.season_number);
+    const seasonBlock = document.createElement('div');
+    seasonBlock.innerHTML = `
+      <h2 class="text-xl font-semibold mb-3 mt-6">Season ${season.season_number}</h2>
+      <div class="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        ${seasonData.episodes.map(ep => `
+          <div class="bg-gray-800 rounded overflow-hidden shadow cursor-pointer hover:scale-[1.02] transition" onclick="openModal('https://player.embed-api.stream/?id=${contentId}&s=${season.season_number}&e=${ep.episode_number}')">
+            <img src="https://image.tmdb.org/t/p/w500${ep.still_path}" class="w-full h-40 object-cover" alt="${ep.name}">
+            <div class="p-2">
+              <p class="text-sm font-semibold">Ep ${ep.episode_number}: ${ep.name}</p>
+              <p class="text-xs text-gray-400">${ep.overview || 'No synopsis available.'}</p>
+            </div>
+          </div>
+        `).join('')}
       </div>
-    `).join('');
-
-    container.innerHTML += seasonHeader + `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">${episodeCards}</div>`;
+    `;
+    container.appendChild(seasonBlock);
   }
 }
 
@@ -108,23 +112,30 @@ function setupTabs(type) {
     btn.addEventListener('click', () => {
       panels.forEach(panel => panel.classList.add('hidden'));
       tabs.forEach(tab => tab.classList.remove('border-b-2', 'border-redmain'));
-      document.getElementById(`tab-${btn.dataset.tab}`).classList.remove('hidden');
-      btn.classList.add('border-b-2', 'border-redmain');
+      const panel = document.getElementById(`tab-${btn.dataset.tab}`);
+      if (panel) {
+        panel.classList.remove('hidden');
+        btn.classList.add('border-b-2', 'border-redmain');
+      }
     });
   });
 
+  // Show only relevant tabs
   document.querySelector('[data-tab="cast"]').style.display = 'inline-block';
   document.querySelector('[data-tab="recommended"]').style.display = 'inline-block';
 
   if (type === 'tv') {
     document.querySelector('[data-tab="episodes"]').style.display = 'inline-block';
-    document.querySelector('[data-tab="episodes"]').before(document.querySelector('[data-tab="sources"]')).style.display = 'none';
     document.querySelector('[data-tab="additional-sources"]').style.display = 'inline-block';
+    document.querySelector('[data-tab="sources"]').style.display = 'none';
   } else {
     document.querySelector('[data-tab="sources"]').style.display = 'inline-block';
+    document.querySelector('[data-tab="episodes"]').style.display = 'none';
+    document.querySelector('[data-tab="additional-sources"]').style.display = 'none';
   }
 
-  document.querySelector('.tab-btn:not([style*="display: none"])')?.click();
+  const firstVisibleTab = Array.from(tabs).find(btn => btn.style.display !== 'none');
+  firstVisibleTab?.click();
 }
 
 async function init() {
@@ -140,16 +151,12 @@ async function init() {
   const { results } = await fetchRecommendations(contentType, contentId);
   renderRecommended(results);
 
-  if (contentType === 'tv') {
-    renderAdditionalSources();
-    renderEpisodes(content);
-  } else {
+  if (contentType === 'movie') {
     renderSources();
+  } else {
+    renderAdditionalSources();
+    await renderEpisodes(content);
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  init();
-  window.closeModal = closeModal;
-  window.openModal = openModal;
-});
+document.addEventListener('DOMContentLoaded', init);
