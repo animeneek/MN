@@ -3,6 +3,10 @@ const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type');
 const contentId = urlParams.get('id');
 
+function imageUrl(path, size = 'w500', fallback = 'https://via.placeholder.com/500x750?text=No+Image') {
+  return path ? `https://image.tmdb.org/t/p/${size}${path}` : fallback;
+}
+
 async function fetchContentDetails(type, id) {
   const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}&language=en-US`);
   return await res.json();
@@ -19,9 +23,9 @@ async function fetchRecommendations(type, id) {
 }
 
 function renderContentDetails(content) {
-  const poster = content.poster_path ? `https://image.tmdb.org/t/p/w500${content.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Image';
+  const poster = imageUrl(content.poster_path);
   document.getElementById('contentDetails').innerHTML = `
-    <img src="${poster}" class="rounded shadow max-w-full" alt="${content.title || content.name}">
+    <img src="${poster}" class="rounded shadow max-w-full object-cover" alt="${content.title || content.name}">
     <div class="md:col-span-2">
       <h1 class="text-3xl font-bold mb-1">${content.title || content.name}</h1>
       <p class="text-sm italic text-gray-400 mb-4">${content.tagline || ''}</p>
@@ -36,7 +40,7 @@ function renderContentDetails(content) {
 function renderCast(cast) {
   const castHTML = cast.slice(0, 12).map(actor => `
     <div class="text-center">
-      <img class="w-24 h-24 object-cover rounded-full mx-auto" src="${actor.profile_path ? `https://image.tmdb.org/t/p/w185${actor.profile_path}` : 'https://via.placeholder.com/150x150?text=No+Image'}" alt="${actor.name}" />
+      <img class="w-24 h-24 object-cover rounded-full mx-auto" src="${imageUrl(actor.profile_path, 'w185', 'https://via.placeholder.com/150x150?text=No+Image')}" alt="${actor.name}" />
       <p class="text-sm mt-2">${actor.name}</p>
       <p class="text-xs text-gray-500">${actor.character}</p>
     </div>
@@ -47,7 +51,7 @@ function renderCast(cast) {
 function renderRecommended(results) {
   const items = results.slice(0, 8).map(item => `
     <a href="content.html?type=${contentType}&id=${item.id}" class="rounded shadow overflow-hidden hover:scale-105 transition block">
-      <img src="${item.poster_path ? `https://image.tmdb.org/t/p/w342${item.poster_path}` : 'https://via.placeholder.com/300x450?text=No+Image'}" class="w-full aspect-[2/3] object-cover" alt="${item.title || item.name}" />
+      <img src="${imageUrl(item.poster_path, 'w342')}" class="w-full aspect-[2/3] object-cover" alt="${item.title || item.name}" />
       <div class="p-2 text-sm text-center">${item.title || item.name}</div>
     </a>
   `).join('');
@@ -79,9 +83,11 @@ async function renderEpisodes(tvData) {
     const seasonData = await res.json();
 
     const episodeBlocks = seasonData.episodes.map(ep => {
-      const img = ep.still_path
-        ? `https://image.tmdb.org/t/p/w780${ep.still_path}`
-        : (season.poster_path ? `https://image.tmdb.org/t/p/w780${season.poster_path}` : (tvData.poster_path ? `https://image.tmdb.org/t/p/w780${tvData.poster_path}` : 'https://via.placeholder.com/780x439?text=No+Image'));
+      const img = imageUrl(
+        ep.still_path,
+        'w780',
+        imageUrl(season.poster_path || tvData.poster_path, 'w780', 'https://via.placeholder.com/780x439?text=No+Image')
+      );
 
       return `
         <div onclick="openModal('https://player.embed-api.stream/?id=${tvData.id}&s=${season.season_number}&e=${ep.episode_number}')" class="relative rounded overflow-hidden shadow cursor-pointer">
