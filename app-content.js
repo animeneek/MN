@@ -1,4 +1,4 @@
-const API_KEY = 'YOUR_TMDB_API_KEY';
+const API_KEY = 'd3e7a7b0a63a4a2cbd5c395de77fabc7';
 const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type'); // 'movie' or 'tv'
 const contentId = urlParams.get('id');
