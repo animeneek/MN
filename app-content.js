@@ -1,4 +1,4 @@
-const API_KEY = 'd3e7a7b0a63a4a2cbd5c395de77fabc7';
+const API_KEY = 'e3afd4c89e3351edad9e875ff7a01f0c';
 const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type'); // 'movie' or 'tv'
 const contentId = urlParams.get('id');
@@ -18,11 +18,6 @@ async function fetchRecommendations(type, id) {
   return await res.json();
 }
 
-async function fetchEpisodes(tvId) {
-  const res = await fetch(`https://api.themoviedb.org/3/tv/${tvId}?api_key=${API_KEY}&language=en-US`);
-  return await res.json();
-}
-
 function renderContentDetails(content) {
   document.getElementById('contentDetails').innerHTML = `
     <img src="https://image.tmdb.org/t/p/w500${content.poster_path}" class="rounded shadow max-w-full" alt="${content.title || content.name}">
@@ -38,6 +33,11 @@ function renderContentDetails(content) {
 }
 
 function renderCast(cast) {
+  if (!cast || cast.length === 0) {
+    document.getElementById('tab-cast').innerHTML = '<p>No cast info available.</p>';
+    return;
+  }
+
   const castHTML = cast.slice(0, 12).map(actor => `
     <div class="text-center">
       <img class="w-24 h-24 object-cover rounded-full mx-auto" src="https://image.tmdb.org/t/p/w185${actor.profile_path}" alt="${actor.name}" />
@@ -49,6 +49,11 @@ function renderCast(cast) {
 }
 
 function renderRecommended(results) {
+  if (!results || results.length === 0) {
+    document.getElementById('tab-recommended').innerHTML = '<p>No recommendations found.</p>';
+    return;
+  }
+
   const items = results.slice(0, 8).map(item => `
     <a href="content.html?type=${contentType}&id=${item.id}" class="rounded shadow overflow-hidden hover:scale-105 transition block">
       <img src="https://image.tmdb.org/t/p/w300${item.poster_path}" class="w-full h-[300px] object-cover" alt="${item.title || item.name}" />
@@ -112,7 +117,6 @@ function setupTabs(type) {
     });
   });
 
-  // Show relevant tabs
   document.querySelector('[data-tab="sources"]').style.display = 'inline-block';
   document.querySelector('[data-tab="cast"]').style.display = 'inline-block';
   document.querySelector('[data-tab="recommended"]').style.display = 'inline-block';
@@ -122,7 +126,6 @@ function setupTabs(type) {
     document.querySelector('[data-tab="additional-sources"]').style.display = 'inline-block';
   }
 
-  // Default to first visible tab
   document.querySelector('.tab-btn:not([style*="display: none"])')?.click();
 }
 
