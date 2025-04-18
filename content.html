@@ -10,8 +10,10 @@
     tailwind.config = {
       darkMode: 'class',
       theme: {
-        fontFamily: { sans: ['Poppins', 'sans-serif'] },
-        extend: { colors: { primary: '#1e293b', redmain: '#ff4444' } }
+        extend: {
+          fontFamily: { sans: ['Poppins', 'sans-serif'] },
+          colors: { redmain: '#ff4444' }
+        }
       }
     };
   </script>
@@ -43,11 +45,10 @@
     </div>
   </main>
 
-  <!-- Modal -->
-  <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
-    <div class="bg-white dark:bg-gray-900 rounded-lg overflow-hidden w-full max-w-3xl shadow-lg relative">
-      <button class="absolute top-2 right-2 text-white bg-redmain hover:bg-red-700 rounded-full px-3 py-1" onclick="closeModal()">✕</button>
-      <iframe id="modalIframe" class="w-full aspect-video" allowfullscreen></iframe>
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-900 max-w-4xl w-full rounded relative">
+      <button onclick="closeModal()" class="absolute top-2 right-2 text-white bg-redmain px-3 py-1 rounded">X</button>
+      <iframe id="playerFrame" class="w-full aspect-video" allowfullscreen></iframe>
     </div>
   </div>
 
