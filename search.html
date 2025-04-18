@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Search Results - MovieNeek</title>
+  <title>Content Details</title>
   <link rel="icon" href="assets/favicon-image.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -11,62 +11,51 @@
       darkMode: 'class',
       theme: {
         fontFamily: { sans: ['Poppins', 'sans-serif'] },
-        extend: { colors: { primary: '#1e293b' } }
+        extend: {
+          colors: {
+            primary: '#ff4444',
+            darkbg: '#111',
+            darkblock: '#222'
+          }
+        }
       }
     };
   </script>
-  <script defer src="app-search.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    input[type="checkbox"]:checked { accent-color: #ff4444; }
-  </style>
 </head>
-<body class="bg-white dark:bg-black text-gray-900 dark:text-white font-sans transition-colors duration-300">
-
+<body class="bg-black text-white font-sans transition-colors duration-300">
   <div id="nav-placeholder"></div>
 
-  <div class="max-w-screen-xl mx-auto p-4">
-    <h2 class="text-2xl font-semibold mb-4">Search Results</h2>
+  <main class="max-w-6xl mx-auto p-4">
+    <div id="contentDetails" class="grid md:grid-cols-3 gap-6 mb-6 bg-[#222] p-4 rounded-lg"></div>
 
-    <!-- Filters -->
-    <div class="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0 mb-4">
-      <!-- Genre Filter -->
-      <div class="relative w-full md:w-72">
-        <label class="block mb-1 font-medium">Filter by Genre:</label>
-        <button id="genreDropdownBtn" class="bg-[#222] text-white px-4 py-2 rounded w-full text-left">
-          Select Genres
-        </button>
-        <div id="genreDropdown" class="absolute z-10 mt-2 w-full bg-[#222] border border-gray-700 rounded shadow-lg hidden max-h-60 overflow-y-auto">
-          <div id="genreOptions" class="p-2 space-y-1"></div>
-        </div>
+    <div>
+      <div class="flex gap-4 border-b border-gray-700 mb-4 text-sm md:text-base font-medium">
+        <button class="tab-btn" data-tab="sources">Sources</button>
+        <button class="tab-btn" data-tab="episodes" style="display:none;">Episodes</button>
+        <button class="tab-btn" data-tab="additional-sources" style="display:none;">Additional Sources</button>
+        <button class="tab-btn" data-tab="cast">Cast</button>
+        <button class="tab-btn" data-tab="recommended">Recommended</button>
       </div>
 
-      <!-- Type Filter -->
-      <div class="w-full md:w-48">
-        <label class="block mb-1 font-medium">Type:</label>
-        <select id="typeSelect" class="bg-[#222] text-white px-4 py-2 rounded w-full">
-          <option value="all">All</option>
-          <option value="movie">Movies</option>
-          <option value="tv">Series</option>
-        </select>
-      </div>
-
-      <!-- Year Filter -->
-      <div class="w-full md:w-48">
-        <label class="block mb-1 font-medium">Year:</label>
-        <select id="yearSelect" class="bg-[#222] text-white px-4 py-2 rounded w-full">
-          <option value="">All Years</option>
-          <!-- Options will be populated by JS -->
-        </select>
+      <div id="tab-content">
+        <div id="tab-sources" class="tab-panel hidden"></div>
+        <div id="tab-episodes" class="tab-panel hidden"></div>
+        <div id="tab-additional-sources" class="tab-panel hidden"></div>
+        <div id="tab-cast" class="tab-panel hidden"></div>
+        <div id="tab-recommended" class="tab-panel hidden"></div>
       </div>
     </div>
+  </main>
 
-    <div id="results" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+  <div id="videoModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-50">
+    <div class="relative w-full max-w-4xl h-[80vh] bg-black rounded-lg overflow-hidden">
+      <iframe id="videoFrame" class="w-full h-full" allowfullscreen></iframe>
+      <button id="closeModal" class="absolute top-2 right-4 text-white text-2xl font-bold">×</button>
+    </div>
   </div>
 
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-  <script>AOS.init();</script>
+  <script defer src="app-content.js"></script>
 </body>
 </html>
