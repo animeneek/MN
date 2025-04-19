@@ -20,7 +20,12 @@ fetch('header.html')
           window.location.href = `search.html?query=${encodeURIComponent(query)}`;
         }
       });
+    } else {
+      console.error("Search form or input not found!");
     }
+  })
+  .catch(error => {
+    console.error("Error fetching header:", error);
   });
 
 function imageUrl(path, size = 'w500', fallback = 'https://via.placeholder.com/500x750?text=No+Image') {
@@ -70,7 +75,7 @@ function renderCast(cast) {
 
 function renderRecommended(results) {
   const items = results.slice(0, 8).map(item => `
-    <a href="content.html?type=${contentType}&id=${item.id}" class="rounded shadow overflow-hidden hover:scale-105 transition block">
+    <a href="info.html?type=${contentType}&id=${item.id}" class="rounded shadow overflow-hidden hover:scale-105 transition block">
       <img src="${imageUrl(item.poster_path, 'w342')}" class="w-full aspect-[2/3] object-cover" alt="${item.title || item.name}" />
       <div class="p-2 text-sm text-center">${item.title || item.name}</div>
     </a>
