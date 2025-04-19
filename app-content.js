@@ -82,51 +82,54 @@ function renderRecommended(results) {
   document.getElementById('tab-recommended').innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4">${items}</div>`;
 }
 
-function getEmbedUrl(src, id) {
+function getEmbedLink(src, videoId) {
   switch (src) {
-    case 'streamtape': return `https://streamtape.com/e/${id}`;
-    case 'streamwish': return `https://streamwish.to/e/${id}`;
-    case 'mp4upload': return `https://mp4upload.com/e/${id}`;
-    case 'other': return `https://other1.com/e/${id}`;
-    case 'other2': return `https://other2.com/e/${id}`;
-    default: return '';
+    case 'streamtape':
+      return `https://streamtape.com/e/${videoId}`;
+    case 'streamwish':
+      return `https://streamwish.to/e/${videoId}`;
+    case 'mp4upload':
+      return `https://mp4upload.com/e/${videoId}`;
+    case 'other':
+      return `https://other1.com/e/${videoId}`;
+    case 'other2':
+      return `https://other2.com/e/${videoId}`;
+    default:
+      return '';
   }
 }
 
 function renderSourceButtons(sources, containerId) {
   const container = document.getElementById(containerId);
-  if (!sources.length) {
-    container.innerHTML = `<div class="text-sm text-gray-400 italic">No Sources Available</div>`;
-    return;
-  }
-  container.innerHTML = sources.map(source => `
-    <button onclick="openModal('${getEmbedUrl(source.SRC, source.VIDEOID)}')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow m-2">
-      ${source.Source}
-    </button>
-  `).join('');
+  if (!sources.length) return;
+
+  sources.forEach(src => {
+    src.SRC.forEach((platform, i) => {
+      const embedUrl = getEmbedLink(platform, src.VIDEOID[i]);
+      const buttonLabel = src.Source[i] || `Source ${i + 1}`;
+      const button = `
+        <button onclick="openModal('${embedUrl}')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow m-2">
+          ${buttonLabel}
+        </button>
+      `;
+      container.insertAdjacentHTML('beforeend', button);
+    });
+  });
 }
 
-async function renderDynamicSources(contentId, contentType) {
-  try {
-    const allSources = await fetchExternalSources();
-    const match = allSources.find(entry => entry.TMDBID == contentId && entry.Class === contentType);
+function renderDefaultMovieSource(id) {
+  const container = document.getElementById('tab-sources');
+  container.innerHTML = `
+    <button onclick="openModal('https://player.embed-api.stream/?id=${id}&type=movie')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow m-2">
+      Watch on Source 1
+    </button>
+  `;
+}
 
-    if (!match) return;
-
-    const sources = match.SRC.map((src, i) => ({
-      SRC: src,
-      VIDEOID: match.VIDEOID[i],
-      Source: match.Source[i]
-    }));
-
-    if (contentType === 'movie') {
-      renderSourceButtons(sources, 'tab-sources');
-    } else {
-      renderSourceButtons(sources, 'tab-additional-sources');
-    }
-  } catch (err) {
-    console.error('Failed to load dynamic sources:', err);
-  }
+function renderAdditionalSourcesMessage() {
+  document.getElementById('tab-additional-sources').innerHTML = `
+    <div class="text-sm text-gray-400 italic">No Additional Sources Yet</div>
+  `;
 }
 
 async function renderEpisodes(tvData) {
@@ -135,6 +138,7 @@ async function renderEpisodes(tvData) {
 
   for (const season of tvData.seasons) {
     if (season.season_number === 0) continue;
+
     const res = await fetch(`https://api.themoviedb.org/3/tv/${tvData.id}/season/${season.season_number}?api_key=${API_KEY}`);
     const seasonData = await res.json();
 
@@ -219,10 +223,15 @@ async function init() {
   const { results } = await fetchRecommendations(contentType, contentId);
   renderRecommended(results);
 
+  const allSources = await fetchExternalSources();
+  const matchedSources = allSources.filter(src => src.TMDBID === parseInt(contentId));
+
   if (contentType === 'movie') {
-    renderDynamicSources(contentId, 'movie');
+    renderDefaultMovieSource(contentId); // show default first
+    renderSourceButtons(matchedSources, 'tab-sources'); // then append dynamic sources
   } else {
-    renderDynamicSources(contentId, 'series');
+    renderAdditionalSourcesMessage();
+    renderSourceButtons(matchedSources, 'tab-additional-sources');
     renderEpisodes(content);
   }
 }
