@@ -29,20 +29,17 @@
   <div id="nav-placeholder"></div>
 
   <main class="max-w-6xl mx-auto px-4 pb-12 mt-6">
-    <!-- Movie/TV Details -->
     <div id="contentDetails" class="grid md:grid-cols-3 gap-6 mb-6 bg-black p-4 rounded-lg"></div>
 
-    <!-- Tabs -->
     <div>
       <div class="flex gap-4 border-b border-gray-700 mb-4 text-sm md:text-base font-medium">
-        <button class="tab-btn border-transparent pb-2" data-tab="sources">Sources</button>
-        <button class="tab-btn border-transparent pb-2" data-tab="episodes" style="display:none;">Episodes</button>
-        <button class="tab-btn border-transparent pb-2" data-tab="additional-sources" style="display:none;">Additional Sources</button>
-        <button class="tab-btn border-transparent pb-2" data-tab="cast">Cast</button>
-        <button class="tab-btn border-transparent pb-2" data-tab="recommended">Recommended</button>
+        <button class="tab-btn" data-tab="sources">Sources</button>
+        <button class="tab-btn" data-tab="episodes" style="display:none;">Episodes</button>
+        <button class="tab-btn" data-tab="additional-sources" style="display:none;">Additional Sources</button>
+        <button class="tab-btn" data-tab="cast">Cast</button>
+        <button class="tab-btn" data-tab="recommended">Recommended</button>
       </div>
 
-      <!-- Tab Panels -->
       <div id="tab-content">
         <div id="tab-sources" class="tab-panel hidden"></div>
         <div id="tab-episodes" class="tab-panel hidden"></div>
@@ -53,7 +50,7 @@
     </div>
   </main>
 
-  <!-- Video Modal -->
+  <!-- ✅ MODAL with padding + wide aspect ratio + larger size -->
   <div id="videoModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
     <div class="relative w-full max-w-6xl p-4 bg-black rounded-lg">
       <button id="closeModal" class="absolute -top-4 -right-4 text-white text-3xl font-bold z-10">×</button>
@@ -63,7 +60,20 @@
     </div>
   </div>
 
-  <!-- Script -->
+  <!-- Load app logic -->
   <script defer src="app-content.js"></script>
+
+  <!-- ✅ Load header.html into placeholder -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('header.html')
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById('nav-placeholder').innerHTML = html;
+        })
+        .catch(error => console.error('Header load error:', error));
+    });
+  </script>
+
 </body>
 </html>
