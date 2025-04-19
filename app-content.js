@@ -3,26 +3,29 @@ const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type');
 const contentId = urlParams.get('id');
 
-// ✅ Load header into #nav-placeholder and enable search
+// ✅ Load header into #nav-placeholder and bind search manually
 fetch('header.html')
   .then(res => res.text())
-  .then(data => {
+  .then(html => {
     const navPlaceholder = document.getElementById('nav-placeholder');
     if (navPlaceholder) {
-      navPlaceholder.innerHTML = data;
+      navPlaceholder.innerHTML = html;
 
-      const searchForm = document.querySelector('#searchForm');
-      const searchInput = document.querySelector('#searchInput');
+      // Wait for DOM to update
+      setTimeout(() => {
+        const searchForm = document.querySelector('#searchForm');
+        const searchInput = document.querySelector('#searchInput');
 
-      if (searchForm && searchInput) {
-        searchForm.addEventListener('submit', (e) => {
-          e.preventDefault();
-          const query = searchInput.value.trim();
-          if (query) {
-            window.location.href = `search.html?query=${encodeURIComponent(query)}`;
-          }
-        });
-      }
+        if (searchForm && searchInput) {
+          searchForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const query = searchInput.value.trim();
+            if (query !== '') {
+              window.location.href = `search.html?query=${encodeURIComponent(query)}`;
+            }
+          });
+        }
+      }, 0);
     }
   });
 
