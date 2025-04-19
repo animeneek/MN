@@ -9,6 +9,7 @@ fetch('header.html')
   .then(data => {
     document.body.insertAdjacentHTML('afterbegin', data);
 
+    // Ensure the form and input are available
     const searchForm = document.querySelector('#searchForm');
     const searchInput = document.querySelector('#searchInput');
 
