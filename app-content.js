@@ -1,3 +1,4 @@
+// Your API Key
 const API_KEY = 'e3afd4c89e3351edad9e875ff7a01f0c';
 
 // Inject header + enable search logic
@@ -143,15 +144,19 @@ function setupTabs(type) {
   });
 
   if (type === 'movie') {
+    // Show the Sources tab and default button
     document.querySelector('[data-tab="sources"]').style.display = 'inline-block';
     document.querySelector('[data-tab="episodes"]').style.display = 'none';
     document.querySelector('[data-tab="additional-sources"]').style.display = 'none';
     document.querySelector('[data-tab="sources"]').classList.add('border-b-2', 'border-primary');
+    document.getElementById('tab-sources').classList.remove('hidden'); // Ensure sources tab is visible on load
   } else {
+    // Show Episodes and Additional Sources
     document.querySelector('[data-tab="sources"]').style.display = 'none';
     document.querySelector('[data-tab="episodes"]').style.display = 'inline-block';
     document.querySelector('[data-tab="additional-sources"]').style.display = 'inline-block';
     document.querySelector('[data-tab="episodes"]').classList.add('border-b-2', 'border-primary');
+    document.getElementById('tab-episodes').classList.remove('hidden'); // Ensure episodes tab is visible on load
   }
 
   document.querySelector('[data-tab="cast"]').style.display = 'inline-block';
