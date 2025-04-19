@@ -8,7 +8,7 @@ fetch('header.html')
 const urlParams = new URLSearchParams(window.location.search);
 const personId = urlParams.get('id');
 
-function imageUrl(path, size = 'w500', fallback = 'https://via.placeholder.com/500x750?text=No+Image') {
+function imageUrl(path, size = 'w500', fallback = 'https://github.com/animeneek/MN/blob/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png') {
   return path ? `https://image.tmdb.org/t/p/${size}${path}` : fallback;
 }
 
@@ -56,14 +56,12 @@ function renderRoleTabs(grouped) {
 
   const departments = Object.keys(grouped);
   departments.forEach((dept, index) => {
-    // Tab buttons
     const btn = document.createElement('button');
     btn.textContent = dept;
     btn.className = `tab-btn ${index === 0 ? 'border-b-2 border-primary' : ''}`;
     btn.dataset.tab = `role-${dept}`;
     tabContainer.appendChild(btn);
 
-    // Content
     const items = grouped[dept]
       .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0))
       .map(item => `
@@ -104,7 +102,6 @@ async function init() {
   const credits = await fetchCombinedCredits(personId);
 
   renderPersonDetails(person);
-
   const grouped = groupCreditsByDepartment(credits.cast.concat(credits.crew));
   renderRoleTabs(grouped);
 }
