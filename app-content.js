@@ -108,6 +108,25 @@ function renderRecommended(results) {
   document.getElementById('tab-recommended').innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4">${items}</div>`;
 }
 
+// Render source buttons for content
+function renderSourceButtons(sources, containerId) {
+  const container = document.getElementById(containerId);
+  if (!sources.length) return;
+
+  sources.forEach(src => {
+    src.SRC.forEach((platform, i) => {
+      const embedUrl = getEmbedLink(platform, src.VIDEOID[i]);
+      const buttonLabel = src.Source[i] || `Source ${i + 1}`;
+      const button = `
+        <button onclick="openModal('${embedUrl}')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow m-2">
+          ${buttonLabel}
+        </button>
+      `;
+      container.insertAdjacentHTML('beforeend', button);
+    });
+  });
+}
+
 // Render default movie source (for movie content)
 function renderDefaultMovieSource(id) {
   const container = document.getElementById('tab-sources');
@@ -115,6 +134,13 @@ function renderDefaultMovieSource(id) {
     <button onclick="openModal('https://player.embed-api.stream/?id=${id}&type=movie')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow m-2">
       Watch on Source 1
     </button>
+  `;
+}
+
+// Render additional sources message (if no sources are available)
+function renderAdditionalSourcesMessage() {
+  document.getElementById('tab-additional-sources').innerHTML = `
+    <div class="text-sm text-gray-400 italic">No Additional Sources Yet</div>
   `;
 }
 
@@ -199,15 +225,6 @@ async function init() {
   if (!contentId || !contentType) return;
 
   const content = await fetchContentDetails(contentType, contentId);
-
-  // Save to Continue Watching
-  saveToContinueWatching({
-    id: content.id,
-    title: content.title || content.name,
-    poster_path: content.poster_path,
-    release_date: content.release_date || content.first_air_date,
-  });
-
   renderContentDetails(content);
   setupTabs(contentType);
 
@@ -222,7 +239,10 @@ async function init() {
 
   if (contentType === 'movie') {
     renderDefaultMovieSource(contentId);
+    renderSourceButtons(matchedSources, 'tab-sources');
   } else {
+    renderAdditionalSourcesMessage();
+    renderSourceButtons(matchedSources, 'tab-additional-sources');
     renderEpisodes(content);
   }
 }

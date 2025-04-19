@@ -128,17 +128,6 @@ async function init() {
   renderPersonDetails(person);
   const grouped = groupCreditsByDepartment(credits.cast.concat(credits.crew));
   renderRoleTabs(grouped);
-
-  // Save the most popular credit to "Continue Watching"
-  if (credits.cast.length > 0) {
-    const mostPopularCredit = credits.cast[0]; // Assuming sorted by popularity
-    saveToContinueWatching({
-      id: mostPopularCredit.id,
-      title: mostPopularCredit.title || mostPopularCredit.name,
-      poster_path: mostPopularCredit.poster_path,
-      release_date: mostPopularCredit.release_date || mostPopularCredit.first_air_date,
-    });
-  }
 }
 
 // Execute on DOM ready

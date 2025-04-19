@@ -120,11 +120,6 @@ async function searchMovies(query, page = 1, append = false) {
     card.addEventListener('click', () => {
       const id = card.dataset.id;
       const type = card.dataset.type;
-      const title = card.dataset.title;
-      const poster_path = card.dataset.posterPath;
-      const release_date = card.dataset.releaseDate;
-
-      saveToContinueWatching({ id, title, poster_path, release_date }); // Save to Continue Watching
       window.location.href = `info.html?id=${id}&type=${type}`;
     });
   });
