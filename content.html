@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Content Details</title>
   <link rel="icon" href="assets/favicon-image.png" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -15,16 +15,24 @@
           colors: {
             primary: '#ff4444',
             darkbg: '#000',
-            darkblock: '#222'
+            darkblock: '#222',
           }
         }
       }
-    };
+    }
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
 </head>
 <body class="bg-black text-white font-sans">
-  <main class="max-w-6xl mx-auto p-4">
+
+  <!-- ✅ HEADER -->
+  <header class="bg-darkblock text-white py-4 px-6 shadow mb-6">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-primary">Movie & Series Info</h1>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 pb-12">
     <div id="contentDetails" class="grid md:grid-cols-3 gap-6 mb-6 bg-black p-4 rounded-lg"></div>
 
     <div>
@@ -46,10 +54,13 @@
     </div>
   </main>
 
-  <div id="videoModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-50">
-    <div class="relative w-full max-w-4xl h-[80vh] bg-black rounded-lg overflow-hidden">
-      <iframe id="videoFrame" class="w-full h-full" allowfullscreen></iframe>
-      <button id="closeModal" class="absolute top-2 right-4 text-white text-2xl font-bold">×</button>
+  <!-- ✅ MODAL with padding + wide aspect ratio + larger size -->
+  <div id="videoModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+    <div class="relative w-full max-w-6xl p-4 bg-black rounded-lg">
+      <button id="closeModal" class="absolute -top-4 -right-4 text-white text-3xl font-bold z-10">×</button>
+      <div class="w-full aspect-[16/9] overflow-hidden rounded-lg">
+        <iframe id="videoFrame" class="w-full h-full rounded" allowfullscreen></iframe>
+      </div>
     </div>
   </div>
 
