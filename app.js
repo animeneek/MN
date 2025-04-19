@@ -94,7 +94,7 @@ async function loadNeekPicks(type = 'POPULAR') {
     card.addEventListener('click', () => {
       const id = card.dataset.id;
       const type = card.dataset.type;
-      window.location.href = `content.html?id=${id}&type=${type}`;
+      window.location.href = `info.html?id=${id}&type=${type}`;
     });
   });
 }
