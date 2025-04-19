@@ -3,7 +3,7 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_ORIGINAL = 'https://image.tmdb.org/t/p/original';
 const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
 
-// Dynamically load header.html and add search logic
+// Load header and search logic
 fetch('header.html')
   .then(res => res.text())
   .then(data => {
@@ -22,13 +22,13 @@ fetch('header.html')
     }
   });
 
-// Format YYYY-MM-DD to MMM DD, YYYY
+// Format date
 function formatDate(dateStr) {
   const date = new Date(dateStr);
   return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
 }
 
-// Get movie genres as a { id: name } map
+// Fetch genre map
 async function fetchGenres() {
   const res = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}`);
   const data = await res.json();
@@ -38,7 +38,7 @@ async function fetchGenres() {
   }, {});
 }
 
-// HERO SLIDER
+// Hero Slider
 async function loadHeroSlider() {
   const res = await fetch(`${BASE_URL}/trending/movie/week?api_key=${API_KEY}`);
   const data = await res.json();
@@ -73,7 +73,7 @@ function startSlider() {
   }, 5000);
 }
 
-// NEEK PICKS Section
+// Load Neek Picks
 async function loadNeekPicks(type = 'POPULAR') {
   const url = `${BASE_URL}/movie/${type.toLowerCase()}?api_key=${API_KEY}`;
   const res = await fetch(url);
@@ -94,15 +94,57 @@ async function loadNeekPicks(type = 'POPULAR') {
     card.addEventListener('click', () => {
       const id = card.dataset.id;
       const type = card.dataset.type;
+      const movie = data.results.find(m => m.id == id);
+      saveToContinueWatching(movie);
       window.location.href = `info.html?id=${id}&type=${type}`;
     });
   });
 }
 
-// Tab handling + Initial load
+// Save to localStorage
+function saveToContinueWatching(movie) {
+  let stored = JSON.parse(localStorage.getItem('continueWatching')) || [];
+  stored = stored.filter(item => item.id !== movie.id);
+  stored.unshift(movie);
+  if (stored.length > 12) stored.pop();
+  localStorage.setItem('continueWatching', JSON.stringify(stored));
+}
+
+// Load from localStorage
+function loadContinueWatching() {
+  const container = document.getElementById('continueWatching');
+  if (!container) return;
+
+  const stored = JSON.parse(localStorage.getItem('continueWatching')) || [];
+  if (stored.length === 0) {
+    container.innerHTML = '<p class="text-sm text-gray-400">No recently watched movies.</p>';
+    return;
+  }
+
+  container.innerHTML = stored.map(movie => `
+    <div class="rounded overflow-hidden shadow-md bg-[#111] hover:scale-105 transition transform duration-300 cursor-pointer content-card" data-id="${movie.id}" data-type="movie">
+      <img src="${IMG_W500 + movie.poster_path}" alt="${movie.title}" class="w-full h-auto">
+      <div class="p-2 text-sm text-white">
+        <h3 class="font-semibold">${movie.title}</h3>
+        <p class="opacity-60 text-xs">${formatDate(movie.release_date)}</p>
+      </div>
+    </div>
+  `).join('');
+
+  container.querySelectorAll('.content-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.dataset.id;
+      const type = card.dataset.type;
+      window.location.href = `info.html?id=${id}&type=${type}`;
+    });
+  });
+}
+
+// Init
 document.addEventListener('DOMContentLoaded', () => {
   loadHeroSlider();
   loadNeekPicks();
+  loadContinueWatching();
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
