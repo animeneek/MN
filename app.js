@@ -95,7 +95,7 @@ async function loadNeekPicks(type = 'POPULAR') {
       const id = card.dataset.id;
       const type = card.dataset.type;
       const movie = data.results.find(m => m.id == id);
-      saveToContinueWatching(movie);
+      saveToContinueWatching(movie); // Save to Continue Watching
       window.location.href = `info.html?id=${id}&type=${type}`;
     });
   });
