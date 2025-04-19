@@ -3,11 +3,24 @@ const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type');
 const contentId = urlParams.get('id');
 
-// Load header
+// ✅ Load header and enable search
 fetch('header.html')
   .then(res => res.text())
   .then(data => {
-    document.getElementById('header').innerHTML = data;
+    document.body.insertAdjacentHTML('afterbegin', data);
+
+    const searchForm = document.querySelector('#searchForm');
+    const searchInput = document.querySelector('#searchInput');
+
+    if (searchForm && searchInput) {
+      searchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const query = searchInput.value.trim();
+        if (query) {
+          window.location.href = `search.html?query=${encodeURIComponent(query)}`;
+        }
+      });
+    }
   });
 
 function imageUrl(path, size = 'w500', fallback = 'https://via.placeholder.com/500x750?text=No+Image') {
