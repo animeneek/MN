@@ -1,9 +1,12 @@
 const API_KEY = 'e3afd4c89e3351edad9e875ff7a01f0c';
 
+// Fetch header.html and inject into the nav placeholder
 fetch('header.html')
   .then(res => res.text())
   .then(data => {
     document.getElementById('nav-placeholder').innerHTML = data;
+
+    // Add event listener to search box to handle 'Enter' key
     const searchBox = document.getElementById('searchBox');
     if (searchBox) {
       searchBox.addEventListener('keypress', (e) => {
@@ -21,30 +24,36 @@ const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type');
 const contentId = urlParams.get('id');
 
-function imageUrl(path, size = 'w500', fallback = 'https://raw.githubusercontent.com/animeneek/MN/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png') {
+// Fallback image function
+function imageUrl(path, size = 'w500', fallback = 'https://github.com/animeneek/MN/blob/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png') {
   return path ? `https://image.tmdb.org/t/p/${size}${path}` : fallback;
 }
 
+// Fetch content details (movie or TV)
 async function fetchContentDetails(type, id) {
   const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}&language=en-US`);
   return await res.json();
 }
 
+// Fetch credits (cast and crew)
 async function fetchCredits(type, id) {
   const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/credits?api_key=${API_KEY}`);
   return await res.json();
 }
 
+// Fetch recommendations
 async function fetchRecommendations(type, id) {
   const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/recommendations?api_key=${API_KEY}`);
   return await res.json();
 }
 
+// Fetch external sources (additional data)
 async function fetchExternalSources() {
   const res = await fetch('https://raw.githubusercontent.com/animeneek/MovieNeek/main/MovieNeek.json');
   return await res.json();
 }
 
+// Render content details (movie or TV page)
 function renderContentDetails(content) {
   const poster = imageUrl(content.poster_path);
   document.getElementById('contentDetails').innerHTML = `
@@ -60,6 +69,7 @@ function renderContentDetails(content) {
   `;
 }
 
+// Render cast (list of actors)
 function renderCast(cast) {
   const castHTML = cast.slice(0, 12).map(actor => `
     <a href="person.html?id=${actor.id}" class="text-center block hover:scale-105 transition">
@@ -71,6 +81,7 @@ function renderCast(cast) {
   document.getElementById('tab-cast').innerHTML = `<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">${castHTML}</div>`;
 }
 
+// Render recommended content (movies or TV shows)
 function renderRecommended(results) {
   const items = results.slice(0, 8).map(item => `
     <a href="content.html?type=${contentType}&id=${item.id}" class="rounded shadow overflow-hidden hover:scale-105 transition block">
@@ -81,6 +92,26 @@ function renderRecommended(results) {
   document.getElementById('tab-recommended').innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4">${items}</div>`;
 }
 
+// Render source buttons for content
+function renderSourceButtons(sources, containerId) {
+  const container = document.getElementById(containerId);
+  if (!sources.length) return;
+
+  sources.forEach(src => {
+    src.SRC.forEach((platform, i) => {
+      const embedUrl = getEmbedLink(platform, src.VIDEOID[i]);
+      const buttonLabel = src.Source[i] || `Source ${i + 1}`;
+      const button = `
+        <button onclick="openModal('${embedUrl}')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow m-2">
+          ${buttonLabel}
+        </button>
+      `;
+      container.insertAdjacentHTML('beforeend', button);
+    });
+  });
+}
+
+// Render default movie source (for movie content)
 function renderDefaultMovieSource(id) {
   const container = document.getElementById('tab-sources');
   container.innerHTML = `
@@ -90,12 +121,14 @@ function renderDefaultMovieSource(id) {
   `;
 }
 
+// Render additional sources message (if no sources are available)
 function renderAdditionalSourcesMessage() {
   document.getElementById('tab-additional-sources').innerHTML = `
     <div class="text-sm text-gray-400 italic">No Additional Sources Yet</div>
   `;
 }
 
+// Render episodes for TV shows
 async function renderEpisodes(tvData) {
   const container = document.getElementById('tab-episodes');
   container.innerHTML = '';
@@ -126,11 +159,58 @@ async function renderEpisodes(tvData) {
   }
 }
 
+// Setup tabs for displaying different sections (e.g., cast, episodes, sources)
+function setupTabs(type) {
+  const tabs = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      panels.forEach(panel => panel.classList.add('hidden'));
+      tabs.forEach(tab => tab.classList.remove('border-b-2', 'border-primary'));
+      document.getElementById(`tab-${btn.dataset.tab}`).classList.remove('hidden');
+      btn.classList.add('border-b-2', 'border-primary');
+    });
+  });
+
+  if (type === 'movie') {
+    document.querySelector('[data-tab="sources"]').style.display = 'inline-block';
+    document.querySelector('[data-tab="episodes"]').style.display = 'none';
+    document.querySelector('[data-tab="additional-sources"]').style.display = 'none';
+    document.querySelector('[data-tab="sources"]').classList.add('border-b-2', 'border-primary');
+    document.getElementById('tab-sources').classList.remove('hidden');
+  } else {
+    document.querySelector('[data-tab="sources"]').style.display = 'none';
+    document.querySelector('[data-tab="episodes"]').style.display = 'inline-block';
+    document.querySelector('[data-tab="additional-sources"]').style.display = 'inline-block';
+    document.querySelector('[data-tab="episodes"]').classList.add('border-b-2', 'border-primary');
+    document.getElementById('tab-episodes').classList.remove('hidden');
+  }
+
+  document.querySelector('[data-tab="cast"]').style.display = 'inline-block';
+  document.querySelector('[data-tab="recommended"]').style.display = 'inline-block';
+}
+
+// Open modal to display external content (e.g., streaming)
+function openModal(url) {
+  const videoFrame = document.getElementById('videoFrame');
+  videoFrame.src = url;
+  document.getElementById('videoModal').classList.remove('hidden');
+}
+
+// Close modal
+document.getElementById('closeModal').addEventListener('click', () => {
+  document.getElementById('videoFrame').src = '';
+  document.getElementById('videoModal').classList.add('hidden');
+});
+
+// Initialize content page
 async function init() {
   if (!contentId || !contentType) return;
 
   const content = await fetchContentDetails(contentType, contentId);
   renderContentDetails(content);
+  setupTabs(contentType);
 
   const { cast } = await fetchCredits(contentType, contentId);
   renderCast(cast);
@@ -143,8 +223,10 @@ async function init() {
 
   if (contentType === 'movie') {
     renderDefaultMovieSource(contentId);
+    renderSourceButtons(matchedSources, 'tab-sources');
   } else {
     renderAdditionalSourcesMessage();
+    renderSourceButtons(matchedSources, 'tab-additional-sources');
     renderEpisodes(content);
   }
 }
