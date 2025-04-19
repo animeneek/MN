@@ -1,27 +1,47 @@
 const API_KEY = 'e3afd4c89e3351edad9e875ff7a01f0c';
 
+// Fetch header.html and inject into the nav placeholder
 fetch('header.html')
   .then(res => res.text())
-  .then(data => document.getElementById('nav-placeholder').innerHTML = data)
+  .then(data => {
+    document.getElementById('nav-placeholder').innerHTML = data;
+
+    // Add event listener to search box to handle 'Enter' key
+    const searchBox = document.getElementById('searchBox');
+    if (searchBox) {
+      searchBox.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          const query = e.target.value.trim();
+          if (query) {
+            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+          }
+        }
+      });
+    }
+  })
   .catch(err => console.error('Error loading header:', err));
 
 const urlParams = new URLSearchParams(window.location.search);
 const personId = urlParams.get('id');
 
+// Fallback image function
 function imageUrl(path, size = 'w500', fallback = 'https://raw.githubusercontent.com/animeneek/MN/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png') {
   return path ? `https://image.tmdb.org/t/p/${size}${path}` : fallback;
 }
 
+// Fetch person details
 async function fetchPersonDetails(id) {
   const res = await fetch(`https://api.themoviedb.org/3/person/${id}?api_key=${API_KEY}&language=en-US`);
   return await res.json();
 }
 
+// Fetch combined credits (movies/TV shows the person worked on)
 async function fetchCombinedCredits(id) {
   const res = await fetch(`https://api.themoviedb.org/3/person/${id}/combined_credits?api_key=${API_KEY}&language=en-US`);
   return await res.json();
 }
 
+// Render person details on the page
 function renderPersonDetails(person) {
   const profile = imageUrl(person.profile_path, 'w500');
   document.getElementById('personDetails').innerHTML = `
@@ -40,6 +60,7 @@ function renderPersonDetails(person) {
   `;
 }
 
+// Group credits by department (acting, directing, etc.)
 function groupCreditsByDepartment(credits) {
   const grouped = {};
   credits.forEach(credit => {
@@ -50,6 +71,7 @@ function groupCreditsByDepartment(credits) {
   return grouped;
 }
 
+// Render tabs for roles (acting, directing, etc.)
 function renderRoleTabs(grouped) {
   const tabContainer = document.getElementById('role-tabs');
   const contentContainer = document.getElementById('role-content');
@@ -81,6 +103,7 @@ function renderRoleTabs(grouped) {
   setupRoleTabEvents();
 }
 
+// Set up event listeners for role tab buttons
 function setupRoleTabEvents() {
   const tabButtons = document.querySelectorAll('#role-tabs .tab-btn');
   const panels = document.querySelectorAll('#role-content .tab-panel');
@@ -95,6 +118,7 @@ function setupRoleTabEvents() {
   });
 }
 
+// Initialize the page by fetching and rendering details
 async function init() {
   if (!personId) return;
 
@@ -106,4 +130,5 @@ async function init() {
   renderRoleTabs(grouped);
 }
 
+// Execute on DOM ready
 document.addEventListener('DOMContentLoaded', init);
