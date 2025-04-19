@@ -15,8 +15,7 @@ fetch('header.html')
         }
       });
     }
-  })
-  .catch(err => console.error('Error loading header:', err));
+  });
 
 const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type');
@@ -63,11 +62,11 @@ function renderContentDetails(content) {
 
 function renderCast(cast) {
   const castHTML = cast.slice(0, 12).map(actor => `
-    <div class="text-center">
+    <a href="person.html?id=${actor.id}" class="text-center block hover:scale-105 transition">
       <img class="w-24 h-24 object-cover rounded-full mx-auto" src="${imageUrl(actor.profile_path, 'w185', 'https://via.placeholder.com/150x150?text=No+Image')}" alt="${actor.name}" />
       <p class="text-sm mt-2">${actor.name}</p>
       <p class="text-xs text-gray-500">${actor.character}</p>
-    </div>
+    </a>
   `).join('');
   document.getElementById('tab-cast').innerHTML = `<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">${castHTML}</div>`;
 }
@@ -84,18 +83,12 @@ function renderRecommended(results) {
 
 function getEmbedLink(src, videoId) {
   switch (src) {
-    case 'streamtape':
-      return `https://streamtape.com/e/${videoId}`;
-    case 'streamwish':
-      return `https://streamwish.to/e/${videoId}`;
-    case 'mp4upload':
-      return `https://mp4upload.com/e/${videoId}`;
-    case 'other':
-      return `https://other1.com/e/${videoId}`;
-    case 'other2':
-      return `https://other2.com/e/${videoId}`;
-    default:
-      return '';
+    case 'streamtape': return `https://streamtape.com/e/${videoId}`;
+    case 'streamwish': return `https://streamwish.to/e/${videoId}`;
+    case 'mp4upload': return `https://mp4upload.com/e/${videoId}`;
+    case 'other': return `https://other1.com/e/${videoId}`;
+    case 'other2': return `https://other2.com/e/${videoId}`;
+    default: return '';
   }
 }
 
@@ -143,12 +136,7 @@ async function renderEpisodes(tvData) {
     const seasonData = await res.json();
 
     const episodeBlocks = seasonData.episodes.map(ep => {
-      const img = imageUrl(
-        ep.still_path,
-        'w780',
-        imageUrl(season.poster_path || tvData.poster_path, 'w780', 'https://via.placeholder.com/780x439?text=No+Image')
-      );
-
+      const img = imageUrl(ep.still_path || season.poster_path || tvData.poster_path, 'w780');
       return `
         <div onclick="openModal('https://player.embed-api.stream/?id=${tvData.id}&s=${season.season_number}&e=${ep.episode_number}')" class="relative rounded overflow-hidden shadow cursor-pointer">
           <img src="${img}" class="w-full h-40 object-cover" />
@@ -205,8 +193,7 @@ function openModal(url) {
 }
 
 document.getElementById('closeModal').addEventListener('click', () => {
-  const videoFrame = document.getElementById('videoFrame');
-  videoFrame.src = '';
+  document.getElementById('videoFrame').src = '';
   document.getElementById('videoModal').classList.add('hidden');
 });
 
