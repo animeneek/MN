@@ -45,6 +45,12 @@ async function fetchRecommendations(type, id) {
   return await res.json();
 }
 
+async function fetchMovieDataFromJson(id) {
+  const res = await fetch('https://raw.githubusercontent.com/animeneek/MovieNeek/main/MovieNeek.json');
+  const data = await res.json();
+  return data.find(item => item.TMDBID === parseInt(id));
+}
+
 function renderContentDetails(content) {
   const poster = imageUrl(content.poster_path);
   document.getElementById('contentDetails').innerHTML = `
@@ -81,21 +87,48 @@ function renderRecommended(results) {
   document.getElementById('tab-recommended').innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4">${items}</div>`;
 }
 
-function renderSources(id) {
-  document.getElementById('tab-sources').innerHTML = `
-    <button onclick="openModal('https://player.embed-api.stream/?id=${id}&type=movie')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow">
-      Watch on Source 1
-    </button>
-  `;
+function renderSources(movieData) {
+  const sourceButtons = movieData.SRC.map((src, index) => {
+    const videoUrl = generateVideoUrl(src, movieData.VIDEOID[index]);
+    return `
+      <button onclick="openModal('${videoUrl}')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow">
+        ${movieData.Source[index]}
+      </button>
+    `;
+  }).join('');
+  document.getElementById('tab-sources').innerHTML = sourceButtons;
 }
 
-function renderAdditionalSources() {
-  document.getElementById('tab-additional-sources').innerHTML = `
-    <div class="text-sm text-gray-400 italic">No Additional Sources Yet</div>
-  `;
+function renderAdditionalSources(seriesData) {
+  const sourceButtons = seriesData.SRC.map((src, index) => {
+    const videoUrl = generateVideoUrl(src, seriesData.VIDEOID[index]);
+    return `
+      <button onclick="openModal('${videoUrl}')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow">
+        ${seriesData.Source[index]}
+      </button>
+    `;
+  }).join('');
+  document.getElementById('tab-additional-sources').innerHTML = sourceButtons;
 }
 
-async function renderEpisodes(tvData) {
+function generateVideoUrl(src, videoId) {
+  switch (src) {
+    case 'streamtape':
+      return `https://streamtape.com/e/${videoId}`;
+    case 'streamwish':
+      return `https://streamwish.to/e/${videoId}`;
+    case 'mp4upload':
+      return `https://mp4upload.com/e/${videoId}`;
+    case 'other':
+      return `https://other1.com/e/${videoId}`;
+    case 'other2':
+      return `https://other2.com/e/${videoId}`;
+    default:
+      return '';
+  }
+}
+
+function renderEpisodes(tvData) {
   const container = document.getElementById('tab-episodes');
   container.innerHTML = '';
 
@@ -188,10 +221,12 @@ async function init() {
   const { results } = await fetchRecommendations(contentType, contentId);
   renderRecommended(results);
 
+  const movieData = await fetchMovieDataFromJson(contentId);
+
   if (contentType === 'movie') {
-    renderSources(contentId);
+    renderSources(movieData);
   } else {
-    renderAdditionalSources();
+    renderAdditionalSources(movieData);
     renderEpisodes(content);
   }
 }
