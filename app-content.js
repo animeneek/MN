@@ -1,13 +1,9 @@
-// Your API Key
 const API_KEY = 'e3afd4c89e3351edad9e875ff7a01f0c';
 
-// Inject header + enable search logic
 fetch('header.html')
   .then(res => res.text())
   .then(data => {
     document.getElementById('nav-placeholder').innerHTML = data;
-
-    // ✅ Wait for search bar to be injected, then attach event listener
     const searchBox = document.getElementById('searchBox');
     if (searchBox) {
       searchBox.addEventListener('keypress', (e) => {
@@ -42,6 +38,11 @@ async function fetchCredits(type, id) {
 
 async function fetchRecommendations(type, id) {
   const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/recommendations?api_key=${API_KEY}`);
+  return await res.json();
+}
+
+async function fetchExternalSources() {
+  const res = await fetch('https://raw.githubusercontent.com/animeneek/MovieNeek/main/MovieNeek.json');
   return await res.json();
 }
 
@@ -81,18 +82,51 @@ function renderRecommended(results) {
   document.getElementById('tab-recommended').innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4">${items}</div>`;
 }
 
-function renderSources(id) {
-  document.getElementById('tab-sources').innerHTML = `
-    <button onclick="openModal('https://player.embed-api.stream/?id=${id}&type=movie')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow">
-      Watch on Source 1
-    </button>
-  `;
+function getEmbedUrl(src, id) {
+  switch (src) {
+    case 'streamtape': return `https://streamtape.com/e/${id}`;
+    case 'streamwish': return `https://streamwish.to/e/${id}`;
+    case 'mp4upload': return `https://mp4upload.com/e/${id}`;
+    case 'other': return `https://other1.com/e/${id}`;
+    case 'other2': return `https://other2.com/e/${id}`;
+    default: return '';
+  }
 }
 
-function renderAdditionalSources() {
-  document.getElementById('tab-additional-sources').innerHTML = `
-    <div class="text-sm text-gray-400 italic">No Additional Sources Yet</div>
-  `;
+function renderSourceButtons(sources, containerId) {
+  const container = document.getElementById(containerId);
+  if (!sources.length) {
+    container.innerHTML = `<div class="text-sm text-gray-400 italic">No Sources Available</div>`;
+    return;
+  }
+  container.innerHTML = sources.map(source => `
+    <button onclick="openModal('${getEmbedUrl(source.SRC, source.VIDEOID)}')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow m-2">
+      ${source.Source}
+    </button>
+  `).join('');
+}
+
+async function renderDynamicSources(contentId, contentType) {
+  try {
+    const allSources = await fetchExternalSources();
+    const match = allSources.find(entry => entry.TMDBID == contentId && entry.Class === contentType);
+
+    if (!match) return;
+
+    const sources = match.SRC.map((src, i) => ({
+      SRC: src,
+      VIDEOID: match.VIDEOID[i],
+      Source: match.Source[i]
+    }));
+
+    if (contentType === 'movie') {
+      renderSourceButtons(sources, 'tab-sources');
+    } else {
+      renderSourceButtons(sources, 'tab-additional-sources');
+    }
+  } catch (err) {
+    console.error('Failed to load dynamic sources:', err);
+  }
 }
 
 async function renderEpisodes(tvData) {
@@ -101,7 +135,6 @@ async function renderEpisodes(tvData) {
 
   for (const season of tvData.seasons) {
     if (season.season_number === 0) continue;
-
     const res = await fetch(`https://api.themoviedb.org/3/tv/${tvData.id}/season/${season.season_number}?api_key=${API_KEY}`);
     const seasonData = await res.json();
 
@@ -144,19 +177,17 @@ function setupTabs(type) {
   });
 
   if (type === 'movie') {
-    // Show the Sources tab and default button
     document.querySelector('[data-tab="sources"]').style.display = 'inline-block';
     document.querySelector('[data-tab="episodes"]').style.display = 'none';
     document.querySelector('[data-tab="additional-sources"]').style.display = 'none';
     document.querySelector('[data-tab="sources"]').classList.add('border-b-2', 'border-primary');
-    document.getElementById('tab-sources').classList.remove('hidden'); // Ensure sources tab is visible on load
+    document.getElementById('tab-sources').classList.remove('hidden');
   } else {
-    // Show Episodes and Additional Sources
     document.querySelector('[data-tab="sources"]').style.display = 'none';
     document.querySelector('[data-tab="episodes"]').style.display = 'inline-block';
     document.querySelector('[data-tab="additional-sources"]').style.display = 'inline-block';
     document.querySelector('[data-tab="episodes"]').classList.add('border-b-2', 'border-primary');
-    document.getElementById('tab-episodes').classList.remove('hidden'); // Ensure episodes tab is visible on load
+    document.getElementById('tab-episodes').classList.remove('hidden');
   }
 
   document.querySelector('[data-tab="cast"]').style.display = 'inline-block';
@@ -189,9 +220,9 @@ async function init() {
   renderRecommended(results);
 
   if (contentType === 'movie') {
-    renderSources(contentId);
+    renderDynamicSources(contentId, 'movie');
   } else {
-    renderAdditionalSources();
+    renderDynamicSources(contentId, 'series');
     renderEpisodes(content);
   }
 }
