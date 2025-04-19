@@ -63,29 +63,5 @@
   <!-- Your Main App Logic -->
   <script defer src="app-content.js"></script>
 
-  <!-- Header Loader and Search Handler -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      fetch('header.html')
-        .then(res => res.text())
-        .then(html => {
-          document.getElementById('nav-placeholder').innerHTML = html;
-
-          // ✅ Wait for search bar to be injected, then attach event listener
-          const searchForm = document.querySelector('#nav-placeholder form');
-          if (searchForm) {
-            searchForm.addEventListener('submit', e => {
-              e.preventDefault();
-              const query = searchForm.querySelector('input[name="query"]').value.trim();
-              if (query) {
-                window.location.href = `search.html?query=${encodeURIComponent(query)}`;
-              }
-            });
-          }
-        })
-        .catch(err => console.error('Error loading header:', err));
-    });
-  </script>
-
 </body>
 </html>
