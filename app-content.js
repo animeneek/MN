@@ -53,6 +53,22 @@ async function fetchExternalSources() {
   return await res.json();
 }
 
+// Get embed URL for the streaming source
+function getEmbedLink(platform, videoId) {
+  switch (platform) {
+    case 'streamtape':
+      return `https://streamtape.com/e/${videoId}`;
+    case 'streamwish':
+      return `https://streamwish.com/e/${videoId}`;
+    case 'mp4upload':
+      return `https://mp4upload.com/embed-${videoId}.html`;
+    case 'other':
+      return `https://other-streaming-site.com/${videoId}`;
+    default:
+      return '';
+  }
+}
+
 // Render content details (movie or TV page)
 function renderContentDetails(content) {
   const poster = imageUrl(content.poster_path);
