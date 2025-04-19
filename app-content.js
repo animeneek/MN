@@ -1,196 +1,154 @@
 const API_KEY = 'e3afd4c89e3351edad9e875ff7a01f0c';
-const urlParams = new URLSearchParams(window.location.search);
-const contentType = urlParams.get('type');
-const contentId = urlParams.get('id');
+const BASE_URL = 'https://api.themoviedb.org/3';
+const IMG_W500 = 'https://image.tmdb.org/t/p/w500';
+const IMG_ORIGINAL = 'https://image.tmdb.org/t/p/original';
+const FALLBACK_IMG = 'https://github.com/animeneek/MN/blob/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png?raw=true';
 
-// ✅ Load header into #nav-placeholder and bind search manually
+// Inject header + enable search logic
 fetch('header.html')
   .then(res => res.text())
-  .then(html => {
-    const navPlaceholder = document.getElementById('nav-placeholder');
-    if (navPlaceholder) {
-      navPlaceholder.innerHTML = html;
+  .then(data => {
+    document.getElementById('nav-placeholder').innerHTML = data;
 
-      // Wait for DOM to update
-      setTimeout(() => {
-        const searchForm = document.querySelector('#searchForm');
-        const searchInput = document.querySelector('#searchInput');
-
-        if (searchForm && searchInput) {
-          searchForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const query = searchInput.value.trim();
-            if (query !== '') {
-              window.location.href = `search.html?query=${encodeURIComponent(query)}`;
-            }
-          });
+    const searchBox = document.getElementById('searchBox');
+    if (searchBox) {
+      searchBox.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          const query = e.target.value.trim();
+          if (query) {
+            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+          }
         }
-      }, 0);
+      });
     }
   });
 
-function imageUrl(path, size = 'w500', fallback = 'https://via.placeholder.com/500x750?text=No+Image') {
-  return path ? `https://image.tmdb.org/t/p/${size}${path}` : fallback;
+// Helpers
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
 }
 
-async function fetchContentDetails(type, id) {
-  const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}&language=en-US`);
-  return await res.json();
+function getQueryParam(param) {
+  return new URLSearchParams(window.location.search).get(param);
 }
 
-async function fetchCredits(type, id) {
-  const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/credits?api_key=${API_KEY}`);
-  return await res.json();
+// Fetch and render content details
+async function fetchContentDetails(id, type) {
+  try {
+    const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}&append_to_response=credits,recommendations,videos`);
+    const data = await res.json();
+
+    renderDetails(data, type);
+    renderCast(data.credits.cast);
+    renderRecommendations(data.recommendations.results);
+    renderSources(data.videos.results);
+  } catch (error) {
+    console.error('Failed to fetch content details:', error);
+  }
 }
 
-async function fetchRecommendations(type, id) {
-  const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}/recommendations?api_key=${API_KEY}`);
-  return await res.json();
-}
-
-function renderContentDetails(content) {
-  const poster = imageUrl(content.poster_path);
-  document.getElementById('contentDetails').innerHTML = `
-    <img src="${poster}" class="rounded shadow max-w-full object-cover" alt="${content.title || content.name}">
-    <div class="md:col-span-2">
-      <h1 class="text-3xl font-bold mb-1">${content.title || content.name}</h1>
-      <p class="text-sm italic text-gray-400 mb-4">${content.tagline || ''}</p>
-      <p class="text-sm mb-4">${content.overview || 'No description available.'}</p>
-      <p><strong>Genres:</strong> ${content.genres.map(g => g.name).join(', ')}</p>
-      <p><strong>Status:</strong> ${content.status}</p>
-      ${contentType === 'tv' ? `<p><strong>Seasons:</strong> ${content.number_of_seasons}</p>` : ''}
+function renderDetails(data, type) {
+  const html = `
+    <div class="col-span-3 md:col-span-1">
+      <img src="${IMG_W500 + data.poster_path}" alt="${data.title || data.name}" class="rounded-lg w-full">
+    </div>
+    <div class="col-span-3 md:col-span-2">
+      <h1 class="text-2xl font-bold mb-2">${data.title || data.name}</h1>
+      <p class="text-gray-400 mb-2">${formatDate(data.release_date || data.first_air_date)}</p>
+      <p class="text-sm mb-4">${data.overview}</p>
+      <div class="text-sm text-gray-300">
+        <p><strong>Status:</strong> ${data.status}</p>
+        <p><strong>Rating:</strong> ${data.vote_average?.toFixed(1)}</p>
+        <p><strong>Genres:</strong> ${(data.genres || []).map(g => g.name).join(', ')}</p>
+      </div>
     </div>
   `;
+  document.getElementById('contentDetails').innerHTML = html;
 }
 
-function renderCast(cast) {
-  const castHTML = cast.slice(0, 12).map(actor => `
+function renderCast(cast = []) {
+  const html = cast.slice(0, 12).map(member => `
     <div class="text-center">
-      <img class="w-24 h-24 object-cover rounded-full mx-auto" src="${imageUrl(actor.profile_path, 'w185', 'https://via.placeholder.com/150x150?text=No+Image')}" alt="${actor.name}" />
-      <p class="text-sm mt-2">${actor.name}</p>
-      <p class="text-xs text-gray-500">${actor.character}</p>
+      <img src="${member.profile_path ? IMG_W500 + member.profile_path : FALLBACK_IMG}" alt="${member.name}" class="w-24 h-24 object-cover rounded-full mx-auto mb-2">
+      <p class="text-sm">${member.name}</p>
+      <p class="text-xs text-gray-400">${member.character}</p>
     </div>
   `).join('');
-  document.getElementById('tab-cast').innerHTML = `<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">${castHTML}</div>`;
+  document.getElementById('tab-cast').innerHTML = `<div class="grid grid-cols-3 md:grid-cols-6 gap-4">${html}</div>`;
 }
 
-function renderRecommended(results) {
-  const items = results.slice(0, 8).map(item => `
-    <a href="info.html?type=${contentType}&id=${item.id}" class="rounded shadow overflow-hidden hover:scale-105 transition block">
-      <img src="${imageUrl(item.poster_path, 'w342')}" class="w-full aspect-[2/3] object-cover" alt="${item.title || item.name}" />
-      <div class="p-2 text-sm text-center">${item.title || item.name}</div>
-    </a>
+function renderRecommendations(recs = []) {
+  const html = recs.slice(0, 12).map(item => `
+    <div class="cursor-pointer hover:scale-105 transition" data-id="${item.id}" data-type="${item.media_type || 'movie'}">
+      <img src="${item.poster_path ? IMG_W500 + item.poster_path : FALLBACK_IMG}" class="rounded-lg w-full">
+      <p class="text-sm mt-2">${item.title || item.name}</p>
+    </div>
   `).join('');
-  document.getElementById('tab-recommended').innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4">${items}</div>`;
+  const wrapper = document.getElementById('tab-recommended');
+  wrapper.innerHTML = `<div class="grid grid-cols-3 md:grid-cols-6 gap-4">${html}</div>`;
+
+  wrapper.querySelectorAll('[data-id]').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.dataset.id;
+      const type = card.dataset.type;
+      window.location.href = `info.html?id=${id}&type=${type}`;
+    });
+  });
 }
 
-function renderSources(id) {
+function renderSources(videos = []) {
+  const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+  if (!trailer) {
+    document.getElementById('tab-sources').innerHTML = '<p class="text-gray-500">No trailers available.</p>';
+    return;
+  }
+
   document.getElementById('tab-sources').innerHTML = `
-    <button onclick="openModal('https://player.embed-api.stream/?id=${id}&type=movie')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow">
-      Watch on Source 1
+    <button class="bg-red-600 text-white px-4 py-2 rounded-lg" onclick="openVideo('${trailer.key}')">
+      ▶ Watch Trailer
     </button>
   `;
 }
 
-function renderAdditionalSources() {
-  document.getElementById('tab-additional-sources').innerHTML = `
-    <div class="text-sm text-gray-400 italic">No Additional Sources Yet</div>
-  `;
-}
-
-async function renderEpisodes(tvData) {
-  const container = document.getElementById('tab-episodes');
-  container.innerHTML = '';
-
-  for (const season of tvData.seasons) {
-    if (season.season_number === 0) continue;
-
-    const res = await fetch(`https://api.themoviedb.org/3/tv/${tvData.id}/season/${season.season_number}?api_key=${API_KEY}`);
-    const seasonData = await res.json();
-
-    const episodeBlocks = seasonData.episodes.map(ep => {
-      const img = imageUrl(
-        ep.still_path,
-        'w780',
-        imageUrl(season.poster_path || tvData.poster_path, 'w780', 'https://via.placeholder.com/780x439?text=No+Image')
-      );
-
-      return `
-        <div onclick="openModal('https://player.embed-api.stream/?id=${tvData.id}&s=${season.season_number}&e=${ep.episode_number}')" class="relative rounded overflow-hidden shadow cursor-pointer">
-          <img src="${img}" class="w-full h-40 object-cover" />
-          <div class="absolute inset-0 bg-black bg-opacity-60 p-3 flex flex-col justify-end text-white">
-            <h3 class="font-semibold text-sm">Episode ${ep.episode_number}: ${ep.name}</h3>
-            <p class="text-xs mt-1">${ep.overview || 'No synopsis available.'}</p>
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    container.innerHTML += `
-      <h2 class="text-xl font-semibold mb-3 mt-6">Season ${season.season_number}</h2>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">${episodeBlocks}</div>
-    `;
-  }
-}
-
-function setupTabs(type) {
-  const tabs = document.querySelectorAll('.tab-btn');
-  const panels = document.querySelectorAll('.tab-panel');
-
-  tabs.forEach(btn => {
-    btn.addEventListener('click', () => {
-      panels.forEach(panel => panel.classList.add('hidden'));
-      tabs.forEach(tab => tab.classList.remove('border-b-2', 'border-primary'));
-      document.getElementById(`tab-${btn.dataset.tab}`).classList.remove('hidden');
-      btn.classList.add('border-b-2', 'border-primary');
-    });
-  });
-
-  document.querySelector('[data-tab="cast"]').style.display = 'inline-block';
-  document.querySelector('[data-tab="recommended"]').style.display = 'inline-block';
-
-  if (type === 'movie') {
-    document.querySelector('[data-tab="sources"]').style.display = 'inline-block';
-  } else {
-    document.querySelector('[data-tab="sources"]').style.display = 'none';
-    document.querySelector('[data-tab="episodes"]').style.display = 'inline-block';
-    document.querySelector('[data-tab="additional-sources"]').style.display = 'inline-block';
-  }
-
-  document.querySelector('.tab-btn:not([style*="display: none"])')?.click();
-}
-
-function openModal(embedUrl) {
+function openVideo(key) {
   const modal = document.getElementById('videoModal');
   const frame = document.getElementById('videoFrame');
-  frame.src = embedUrl;
+  frame.src = `https://www.youtube.com/embed/${key}?autoplay=1`;
   modal.classList.remove('hidden');
 }
 
-document.getElementById('closeModal')?.addEventListener('click', () => {
-  document.getElementById('videoModal').classList.add('hidden');
-  document.getElementById('videoFrame').src = '';
+document.getElementById('closeModal').addEventListener('click', () => {
+  const modal = document.getElementById('videoModal');
+  const frame = document.getElementById('videoFrame');
+  frame.src = '';
+  modal.classList.add('hidden');
 });
 
-async function init() {
-  if (!contentId || !contentType) return;
+// Tab handling
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.add('hidden'));
+    document.getElementById(`tab-${tab}`).classList.remove('hidden');
 
-  const content = await fetchContentDetails(contentType, contentId);
-  renderContentDetails(content);
-  setupTabs(contentType);
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.remove('bg-[#ff4444]', 'text-white');
+      b.classList.add('bg-transparent');
+    });
+    btn.classList.add('bg-[#ff4444]', 'text-white');
+  });
+});
 
-  const { cast } = await fetchCredits(contentType, contentId);
-  renderCast(cast);
-
-  const { results } = await fetchRecommendations(contentType, contentId);
-  renderRecommended(results);
-
-  if (contentType === 'movie') {
-    renderSources(contentId);
-  } else {
-    renderAdditionalSources();
-    renderEpisodes(content);
+// Load details
+document.addEventListener('DOMContentLoaded', () => {
+  const id = getQueryParam('id');
+  const type = getQueryParam('type') || 'movie';
+  if (id) {
+    fetchContentDetails(id, type);
   }
-}
 
-document.addEventListener('DOMContentLoaded', init);
+  // Default to first visible tab
+  const firstTab = document.querySelector('.tab-btn');
+  if (firstTab) firstTab.click();
+});
