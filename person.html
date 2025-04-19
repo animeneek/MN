@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Person Details</title>
+  <link rel="icon" href="assets/favicon-image.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        fontFamily: { sans: ['Poppins', 'sans-serif'] },
+        extend: {
+          colors: {
+            primary: '#ff4444',
+            darkbg: '#000',
+            darkblock: '#222',
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body class="bg-black text-white font-sans">
+
+  <!-- Header -->
+  <div id="nav-placeholder"></div>
+
+  <main class="max-w-6xl mx-auto px-4 pb-12 mt-6">
+    <div id="personDetails" class="grid md:grid-cols-3 gap-6 mb-6 bg-black p-4 rounded-lg"></div>
+
+    <div class="mt-6">
+      <div id="role-tabs" class="flex flex-wrap gap-4 border-b border-gray-700 mb-4 text-sm md:text-base font-medium"></div>
+      <div id="role-content"></div>
+    </div>
+  </main>
+
+  <script defer src="app-person.js"></script>
+</body>
+</html>
