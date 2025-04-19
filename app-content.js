@@ -14,18 +14,15 @@ fetch('header.html')
 
     if (searchForm && searchInput) {
       searchForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const query = searchInput.value.trim();
+        e.preventDefault(); // Prevents the form from submitting the traditional way
+
+        const query = searchInput.value.trim(); // Get the query from input
         if (query) {
+          // Redirects to search.html with the query parameter
           window.location.href = `search.html?query=${encodeURIComponent(query)}`;
         }
       });
-    } else {
-      console.error("Search form or input not found!");
     }
-  })
-  .catch(error => {
-    console.error("Error fetching header:", error);
   });
 
 function imageUrl(path, size = 'w500', fallback = 'https://via.placeholder.com/500x750?text=No+Image') {
