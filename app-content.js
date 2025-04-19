@@ -45,12 +45,6 @@ async function fetchRecommendations(type, id) {
   return await res.json();
 }
 
-async function fetchMovieDataFromJson(id) {
-  const res = await fetch('https://raw.githubusercontent.com/animeneek/MovieNeek/main/MovieNeek.json');
-  const data = await res.json();
-  return data.find(item => item.TMDBID === parseInt(id));
-}
-
 function renderContentDetails(content) {
   const poster = imageUrl(content.poster_path);
   document.getElementById('contentDetails').innerHTML = `
@@ -87,48 +81,84 @@ function renderRecommended(results) {
   document.getElementById('tab-recommended').innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4">${items}</div>`;
 }
 
-function renderSources(movieData) {
-  const sourceButtons = movieData.SRC.map((src, index) => {
-    const videoUrl = generateVideoUrl(src, movieData.VIDEOID[index]);
-    return `
-      <button onclick="openModal('${videoUrl}')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow">
-        ${movieData.Source[index]}
-      </button>
-    `;
-  }).join('');
-  document.getElementById('tab-sources').innerHTML = sourceButtons;
+async function fetchMovieNeekJson() {
+  const res = await fetch('https://raw.githubusercontent.com/animeneek/MovieNeek/main/MovieNeek.json');
+  return await res.json();
 }
 
-function renderAdditionalSources(seriesData) {
-  const sourceButtons = seriesData.SRC.map((src, index) => {
-    const videoUrl = generateVideoUrl(src, seriesData.VIDEOID[index]);
-    return `
-      <button onclick="openModal('${videoUrl}')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow">
-        ${seriesData.Source[index]}
-      </button>
-    `;
-  }).join('');
-  document.getElementById('tab-additional-sources').innerHTML = sourceButtons;
-}
+function renderSources(id, sources) {
+  const movieSources = sources.find(s => s.TMDBID === id && s.Class === 'movie');
+  if (movieSources) {
+    const sourceButtons = movieSources.SRC.map((src, index) => {
+      const videoId = movieSources.VIDEOID[index];
+      let embedLink = '';
 
-function generateVideoUrl(src, videoId) {
-  switch (src) {
-    case 'streamtape':
-      return `https://streamtape.com/e/${videoId}`;
-    case 'streamwish':
-      return `https://streamwish.to/e/${videoId}`;
-    case 'mp4upload':
-      return `https://mp4upload.com/e/${videoId}`;
-    case 'other':
-      return `https://other1.com/e/${videoId}`;
-    case 'other2':
-      return `https://other2.com/e/${videoId}`;
-    default:
-      return '';
+      switch (src) {
+        case 'streamtape':
+          embedLink = `https://streamtape.com/e/${videoId}`;
+          break;
+        case 'streamwish':
+          embedLink = `https://streamwish.to/e/${videoId}`;
+          break;
+        case 'mp4upload':
+          embedLink = `https://mp4upload.com/e/${videoId}`;
+          break;
+        case 'other':
+          embedLink = `https://other1.com/e/${videoId}`;
+          break;
+        case 'other2':
+          embedLink = `https://other2.com/e/${videoId}`;
+          break;
+      }
+
+      return `
+        <button onclick="openModal('${embedLink}')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow">
+          ${movieSources.Source[index]}
+        </button>
+      `;
+    }).join('');
+
+    document.getElementById('tab-sources').innerHTML = sourceButtons;
   }
 }
 
-function renderEpisodes(tvData) {
+function renderAdditionalSources(id, sources) {
+  const seriesSources = sources.find(s => s.TMDBID === id && s.Class === 'series');
+  if (seriesSources) {
+    const additionalSourceButtons = seriesSources.SRC.map((src, index) => {
+      const videoId = seriesSources.VIDEOID[index];
+      let embedLink = '';
+
+      switch (src) {
+        case 'streamtape':
+          embedLink = `https://streamtape.com/e/${videoId}`;
+          break;
+        case 'streamwish':
+          embedLink = `https://streamwish.to/e/${videoId}`;
+          break;
+        case 'mp4upload':
+          embedLink = `https://mp4upload.com/e/${videoId}`;
+          break;
+        case 'other':
+          embedLink = `https://other1.com/e/${videoId}`;
+          break;
+        case 'other2':
+          embedLink = `https://other2.com/e/${videoId}`;
+          break;
+      }
+
+      return `
+        <button onclick="openModal('${embedLink}')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow">
+          ${seriesSources.Source[index]}
+        </button>
+      `;
+    }).join('');
+
+    document.getElementById('tab-additional-sources').innerHTML = additionalSourceButtons;
+  }
+}
+
+async function renderEpisodes(tvData) {
   const container = document.getElementById('tab-episodes');
   container.innerHTML = '';
 
@@ -221,12 +251,12 @@ async function init() {
   const { results } = await fetchRecommendations(contentType, contentId);
   renderRecommended(results);
 
-  const movieData = await fetchMovieDataFromJson(contentId);
+  const sources = await fetchMovieNeekJson();
 
   if (contentType === 'movie') {
-    renderSources(movieData);
+    renderSources(contentId, sources);
   } else {
-    renderAdditionalSources(movieData);
+    renderAdditionalSources(contentId, sources);
     renderEpisodes(content);
   }
 }
