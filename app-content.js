@@ -3,26 +3,26 @@ const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type');
 const contentId = urlParams.get('id');
 
-// ✅ Load header and enable search
+// ✅ Load header into #nav-placeholder and enable search
 fetch('header.html')
   .then(res => res.text())
   .then(data => {
-    document.body.insertAdjacentHTML('afterbegin', data);
+    const navPlaceholder = document.getElementById('nav-placeholder');
+    if (navPlaceholder) {
+      navPlaceholder.innerHTML = data;
 
-    // Ensure the form and input are available
-    const searchForm = document.querySelector('#searchForm');
-    const searchInput = document.querySelector('#searchInput');
+      const searchForm = document.querySelector('#searchForm');
+      const searchInput = document.querySelector('#searchInput');
 
-    if (searchForm && searchInput) {
-      searchForm.addEventListener('submit', (e) => {
-        e.preventDefault(); // Prevents the form from submitting the traditional way
-
-        const query = searchInput.value.trim(); // Get the query from input
-        if (query) {
-          // Redirects to search.html with the query parameter
-          window.location.href = `search.html?query=${encodeURIComponent(query)}`;
-        }
-      });
+      if (searchForm && searchInput) {
+        searchForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const query = searchInput.value.trim();
+          if (query) {
+            window.location.href = `search.html?query=${encodeURIComponent(query)}`;
+          }
+        });
+      }
     }
   });
 
