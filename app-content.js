@@ -20,22 +20,6 @@ fetch('header.html')
     }
   });
 
-// Example for adding to "Continue Watching" on content pages
-async function init() {
-  if (!contentId || !contentType) return;
-
-  const content = await fetchContentDetails(contentType, contentId);
-  renderContentDetails(content);
-
-  // Save to "Continue Watching"
-  saveToContinueWatching({
-    id: content.id,
-    title: content.title || content.name,
-    poster_path: content.poster_path,
-    release_date: content.release_date || content.first_air_date,
-  });
-
-
 const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type');
 const contentId = urlParams.get('id');
