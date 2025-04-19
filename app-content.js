@@ -6,6 +6,7 @@ fetch('header.html')
   .then(data => {
     document.getElementById('nav-placeholder').innerHTML = data;
 
+    // ✅ Wait for search bar to be injected, then attach event listener
     const searchBox = document.getElementById('searchBox');
     if (searchBox) {
       searchBox.addEventListener('keypress', (e) => {
@@ -17,7 +18,8 @@ fetch('header.html')
         }
       });
     }
-  });
+  })
+  .catch(err => console.error('Error loading header:', err));
 
 const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type');
@@ -153,20 +155,8 @@ function setupTabs(type) {
     document.querySelector('[data-tab="additional-sources"]').style.display = 'inline-block';
   }
 
-  document.querySelector('.tab-btn:not([style*="display: none"])')?.click();
+  document.querySelector('[data-tab="cast"]').classList.add('border-b-2', 'border-primary');
 }
-
-function openModal(embedUrl) {
-  const modal = document.getElementById('videoModal');
-  const frame = document.getElementById('videoFrame');
-  frame.src = embedUrl;
-  modal.classList.remove('hidden');
-}
-
-document.getElementById('closeModal')?.addEventListener('click', () => {
-  document.getElementById('videoModal').classList.add('hidden');
-  document.getElementById('videoFrame').src = '';
-});
 
 async function init() {
   if (!contentId || !contentType) return;
