@@ -142,21 +142,33 @@ function setupTabs(type) {
     });
   });
 
-  document.querySelector('[data-tab="cast"]').style.display = 'inline-block';
-  document.querySelector('[data-tab="recommended"]').style.display = 'inline-block';
-
   if (type === 'movie') {
     document.querySelector('[data-tab="sources"]').style.display = 'inline-block';
     document.querySelector('[data-tab="episodes"]').style.display = 'none';
     document.querySelector('[data-tab="additional-sources"]').style.display = 'none';
+    document.querySelector('[data-tab="sources"]').classList.add('border-b-2', 'border-primary');
   } else {
     document.querySelector('[data-tab="sources"]').style.display = 'none';
     document.querySelector('[data-tab="episodes"]').style.display = 'inline-block';
     document.querySelector('[data-tab="additional-sources"]').style.display = 'inline-block';
+    document.querySelector('[data-tab="episodes"]').classList.add('border-b-2', 'border-primary');
   }
 
-  document.querySelector('[data-tab="cast"]').classList.add('border-b-2', 'border-primary');
+  document.querySelector('[data-tab="cast"]').style.display = 'inline-block';
+  document.querySelector('[data-tab="recommended"]').style.display = 'inline-block';
 }
+
+function openModal(url) {
+  const videoFrame = document.getElementById('videoFrame');
+  videoFrame.src = url;
+  document.getElementById('videoModal').classList.remove('hidden');
+}
+
+document.getElementById('closeModal').addEventListener('click', () => {
+  const videoFrame = document.getElementById('videoFrame');
+  videoFrame.src = '';
+  document.getElementById('videoModal').classList.add('hidden');
+});
 
 async function init() {
   if (!contentId || !contentType) return;
