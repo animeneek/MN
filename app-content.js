@@ -21,7 +21,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type');
 const contentId = urlParams.get('id');
 
-function imageUrl(path, size = 'w500', fallback = 'https://via.placeholder.com/500x750?text=No+Image') {
+function imageUrl(path, size = 'w500', fallback = 'https://github.com/animeneek/MN/blob/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png') {
   return path ? `https://image.tmdb.org/t/p/${size}${path}` : fallback;
 }
 
@@ -63,7 +63,7 @@ function renderContentDetails(content) {
 function renderCast(cast) {
   const castHTML = cast.slice(0, 12).map(actor => `
     <a href="person.html?id=${actor.id}" class="text-center block hover:scale-105 transition">
-      <img class="w-24 h-24 object-cover rounded-full mx-auto" src="${imageUrl(actor.profile_path, 'w185', 'https://via.placeholder.com/150x150?text=No+Image')}" alt="${actor.name}" />
+      <img class="w-24 h-24 object-cover rounded-full mx-auto" src="${imageUrl(actor.profile_path, 'w185')}" alt="${actor.name}" />
       <p class="text-sm mt-2">${actor.name}</p>
       <p class="text-xs text-gray-500">${actor.character}</p>
     </a>
@@ -214,8 +214,8 @@ async function init() {
   const matchedSources = allSources.filter(src => src.TMDBID === parseInt(contentId));
 
   if (contentType === 'movie') {
-    renderDefaultMovieSource(contentId); // show default first
-    renderSourceButtons(matchedSources, 'tab-sources'); // then append dynamic sources
+    renderDefaultMovieSource(contentId);
+    renderSourceButtons(matchedSources, 'tab-sources');
   } else {
     renderAdditionalSourcesMessage();
     renderSourceButtons(matchedSources, 'tab-additional-sources');
