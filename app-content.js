@@ -21,7 +21,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type');
 const contentId = urlParams.get('id');
 
-function imageUrl(path, size = 'w500', fallback = 'https://github.com/animeneek/MN/blob/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png') {
+function imageUrl(path, size = 'w500', fallback = 'https://raw.githubusercontent.com/animeneek/MN/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png') {
   return path ? `https://image.tmdb.org/t/p/${size}${path}` : fallback;
 }
 
@@ -81,35 +81,6 @@ function renderRecommended(results) {
   document.getElementById('tab-recommended').innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4">${items}</div>`;
 }
 
-function getEmbedLink(src, videoId) {
-  switch (src) {
-    case 'streamtape': return `https://streamtape.com/e/${videoId}`;
-    case 'streamwish': return `https://streamwish.to/e/${videoId}`;
-    case 'mp4upload': return `https://mp4upload.com/e/${videoId}`;
-    case 'other': return `https://other1.com/e/${videoId}`;
-    case 'other2': return `https://other2.com/e/${videoId}`;
-    default: return '';
-  }
-}
-
-function renderSourceButtons(sources, containerId) {
-  const container = document.getElementById(containerId);
-  if (!sources.length) return;
-
-  sources.forEach(src => {
-    src.SRC.forEach((platform, i) => {
-      const embedUrl = getEmbedLink(platform, src.VIDEOID[i]);
-      const buttonLabel = src.Source[i] || `Source ${i + 1}`;
-      const button = `
-        <button onclick="openModal('${embedUrl}')" class="bg-primary hover:bg-red-600 text-white px-4 py-2 rounded shadow m-2">
-          ${buttonLabel}
-        </button>
-      `;
-      container.insertAdjacentHTML('beforeend', button);
-    });
-  });
-}
-
 function renderDefaultMovieSource(id) {
   const container = document.getElementById('tab-sources');
   container.innerHTML = `
@@ -155,54 +126,11 @@ async function renderEpisodes(tvData) {
   }
 }
 
-function setupTabs(type) {
-  const tabs = document.querySelectorAll('.tab-btn');
-  const panels = document.querySelectorAll('.tab-panel');
-
-  tabs.forEach(btn => {
-    btn.addEventListener('click', () => {
-      panels.forEach(panel => panel.classList.add('hidden'));
-      tabs.forEach(tab => tab.classList.remove('border-b-2', 'border-primary'));
-      document.getElementById(`tab-${btn.dataset.tab}`).classList.remove('hidden');
-      btn.classList.add('border-b-2', 'border-primary');
-    });
-  });
-
-  if (type === 'movie') {
-    document.querySelector('[data-tab="sources"]').style.display = 'inline-block';
-    document.querySelector('[data-tab="episodes"]').style.display = 'none';
-    document.querySelector('[data-tab="additional-sources"]').style.display = 'none';
-    document.querySelector('[data-tab="sources"]').classList.add('border-b-2', 'border-primary');
-    document.getElementById('tab-sources').classList.remove('hidden');
-  } else {
-    document.querySelector('[data-tab="sources"]').style.display = 'none';
-    document.querySelector('[data-tab="episodes"]').style.display = 'inline-block';
-    document.querySelector('[data-tab="additional-sources"]').style.display = 'inline-block';
-    document.querySelector('[data-tab="episodes"]').classList.add('border-b-2', 'border-primary');
-    document.getElementById('tab-episodes').classList.remove('hidden');
-  }
-
-  document.querySelector('[data-tab="cast"]').style.display = 'inline-block';
-  document.querySelector('[data-tab="recommended"]').style.display = 'inline-block';
-}
-
-function openModal(url) {
-  const videoFrame = document.getElementById('videoFrame');
-  videoFrame.src = url;
-  document.getElementById('videoModal').classList.remove('hidden');
-}
-
-document.getElementById('closeModal').addEventListener('click', () => {
-  document.getElementById('videoFrame').src = '';
-  document.getElementById('videoModal').classList.add('hidden');
-});
-
 async function init() {
   if (!contentId || !contentType) return;
 
   const content = await fetchContentDetails(contentType, contentId);
   renderContentDetails(content);
-  setupTabs(contentType);
 
   const { cast } = await fetchCredits(contentType, contentId);
   renderCast(cast);
@@ -215,10 +143,8 @@ async function init() {
 
   if (contentType === 'movie') {
     renderDefaultMovieSource(contentId);
-    renderSourceButtons(matchedSources, 'tab-sources');
   } else {
     renderAdditionalSourcesMessage();
-    renderSourceButtons(matchedSources, 'tab-additional-sources');
     renderEpisodes(content);
   }
 }
