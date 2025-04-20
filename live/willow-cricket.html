@@ -3,92 +3,112 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Willow Cricket - Live Stream</title>
+  <title>Willow-Cricket</title>
   <style>
     body {
+      background: #000;
+      color: #fff;
+      text-align: center;
       margin: 0;
-      padding: 0;
-      background-color: #0e0e0e;
-      font-family: Arial, sans-serif;
-      color: #ffffff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
+      font-family: sans-serif;
     }
-
-    h1 {
-      margin: 20px 0;
-      font-size: 1.75rem;
-    }
-
     .iframe-container {
       width: 100%;
       max-width: 1200px;
-      aspect-ratio: 16 / 9;
+      height: 600px;
+      margin: 20px auto;
       position: relative;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
     }
-
     iframe {
       width: 100%;
       height: 100%;
       border: none;
     }
-
-    .btn {
-      margin: 20px 0;
+    button {
       padding: 10px 20px;
-      font-size: 16px;
-      background-color: #1f1f1f;
-      color: #ffffff;
-      border: 1px solid #444;
-      border-radius: 6px;
+      font-size: 18px;
+      margin: 20px auto;
       cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .btn:hover {
-      background-color: #333;
+      background: #ff4444;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
     }
   </style>
 </head>
 <body>
 
-  <h1>Willow Cricket - Live Telecast</h1>
+  <!-- Header -->
+  <div id="nav-placeholder"></div>
 
+  <h2>Willow-Cricket</h2>
+
+  <!-- Embed Container -->
   <div class="iframe-container" id="iframeWrapper">
-    <iframe 
-      id="myIframe" 
-      src="" 
-      allowfullscreen>
-    </iframe>
+    <iframe id="myIframe" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>
   </div>
 
-  <button class="btn" onclick="openFullscreen()">Go Fullscreen</button>
+  <button onclick="openFullscreen()">Go Fullscreen</button>
 
+  <!-- Footer -->
+  <div id="footer-placeholder"></div>
+
+  <!-- Inline Script -->
   <script>
+    // Load header
+    fetch('header.html')
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById('nav-placeholder').innerHTML = data;
+
+        const searchBox = document.getElementById('searchBox');
+        if (searchBox) {
+          searchBox.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+              const query = e.target.value.trim();
+              if (query) {
+                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+              }
+            }
+          });
+        }
+      });
+
+    // Load footer
+    fetch('footer.html')
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById('footer-placeholder').innerHTML = data;
+      });
+
+    // Decode URL and load iframe source
     function decodeAndLoadIframe() {
-      // Base64 encoded URL to avoid hardcoding it directly
       const encodedUrl = "aHR0cHM6Ly90YW1hc2hhbGl2ZS5naXRodWIuaW8vd2lsbG93LWNyaWNrZXQuaHRtbA==";
       const decodedUrl = atob(encodedUrl);
       document.getElementById('myIframe').src = decodedUrl;
     }
 
+    // Fullscreen logic
     function openFullscreen() {
-      const wrapper = document.getElementById("iframeWrapper");
-      if (wrapper.requestFullscreen) {
-        wrapper.requestFullscreen();
-      } else if (wrapper.webkitRequestFullscreen) {
-        wrapper.webkitRequestFullscreen();
-      } else if (wrapper.msRequestFullscreen) {
-        wrapper.msRequestFullscreen();
+      const iframe = document.getElementById("myIframe");
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.mozRequestFullScreen) {
+        iframe.mozRequestFullScreen();
+      } else if (iframe.webkitRequestFullscreen) {
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.msRequestFullscreen) {
+        iframe.msRequestFullscreen();
       }
     }
 
+    // Block unwanted popups (basic protection)
+    window.open = function () {
+      console.log("Popup blocked.");
+      return null;
+    };
+
+    // Load iframe when page is ready
     window.onload = decodeAndLoadIframe;
   </script>
 
