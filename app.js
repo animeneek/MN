@@ -22,6 +22,13 @@ fetch('header.html')
     }
   });
 
+// Inject footer.html
+fetch('footer.html')
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById('footer-placeholder').innerHTML = data;
+  });
+
 // Format date
 function formatDate(dateStr) {
   const date = new Date(dateStr);
