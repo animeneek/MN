@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live TV v 19.33</title>
+  <title>Live TV v 19.40</title>
   <style>
     body {
       background-color: #000;
@@ -67,30 +67,57 @@
   <div id="footer-placeholder"></div>
 
   <script>
-    // Inject header and footer
-    fetch('header.html')
-      .then(res => res.text())
-      .then(html => document.getElementById('nav-placeholder').innerHTML = html);
+// Fetch header.html and inject into the nav placeholder
+fetch('header.html')
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById('nav-placeholder').innerHTML = data;
 
-    fetch('footer.html')
-      .then(res => res.text())
-      .then(html => document.getElementById('footer-placeholder').innerHTML = html);
+    const searchBox = document.getElementById('searchBox');
+    if (searchBox) {
+      searchBox.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          const query = e.target.value.trim();
+          if (query) {
+            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+          }
+        }
+      });
+    }
+  });
 
+// Inject footer.html
+fetch('footer.html')
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById('footer-placeholder').innerHTML = data;
+  });
+
+    
     // Load sources.json
     let sources = {};
 
-    async function loadSources() {
-      const res = await fetch('sources.json');
-      sources = await res.json();
+async function loadSources() {
+  const res = await fetch('sources.json');
+  sources = await res.json();
 
-      const select = document.getElementById('channelSelect');
-      for (const key in sources) {
-        const option = document.createElement('option');
-        option.value = key;
-        option.textContent = sources[key].name;
-        select.appendChild(option);
-      }
-    }
+  const select = document.getElementById('channelSelect');
+
+  // Default disabled option
+  const defaultOption = document.createElement('option');
+  defaultOption.disabled = true;
+  defaultOption.selected = true;
+  defaultOption.textContent = 'Select Live Channel';
+  select.appendChild(defaultOption);
+
+  // Add channels
+  for (const key in sources) {
+    const option = document.createElement('option');
+    option.value = key;
+    option.textContent = sources[key].name;
+    select.appendChild(option);
+  }
+}
 
     function setupPlayButton() {
       const btn = document.getElementById('playBtn');
