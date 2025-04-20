@@ -51,30 +51,59 @@ async function fetchExternalSources() {
 
 function getEmbedLink(platform, videoId) {
   switch (platform) {
-    case 'streamtape':
-      return `https://streamtape.com/e/${videoId}`;
-    case 'streamwish':
-      return `https://streamwish.com/e/${videoId}`;
-    case 'mp4upload':
-      return `https://mp4upload.com/embed-${videoId}.html`;
-    case 'other':
-      return `https://other-streaming-site.com/${videoId}`;
-    default:
-      return '';
+    case 'streamtape': return `https://streamtape.com/e/${videoId}`;
+    case 'streamwish': return `https://streamwish.com/e/${videoId}`;
+    case 'mp4upload': return `https://mp4upload.com/embed-${videoId}.html`;
+    case 'other': return `https://other-streaming-site.com/${videoId}`;
+    default: return '';
   }
 }
 
-function renderContentDetails(content) {
+function linkToPerson(name, id) {
+  return `<a href="person.html?id=${id}" class="text-blue-500 hover:underline">${name}</a>`;
+}
+
+function renderContentDetails(content, crew = []) {
   const poster = imageUrl(content.poster_path);
+  document.title = `${content.title || content.name} | ${contentType === 'movie' ? 'Movie' : 'Series'} Info`;
+
+  const genres = content.genres.map(g => g.name).join(', ');
+  let extraDetails = '';
+
+  if (contentType === 'movie') {
+    const director = crew.find(c => c.job === 'Director');
+    const screenplay = crew.find(c => c.job === 'Screenplay');
+    const story = crew.find(c => c.job === 'Story');
+
+    extraDetails = `
+      <p><strong>Release Date:</strong> ${content.release_date || 'N/A'}</p>
+      <p><strong>Status:</strong> ${content.status || 'N/A'}</p>
+      ${director ? `<p><strong>Director:</strong> ${linkToPerson(director.name, director.id)}</p>` : ''}
+      ${screenplay ? `<p><strong>Screenplay:</strong> ${linkToPerson(screenplay.name, screenplay.id)}</p>` : ''}
+      ${story ? `<p><strong>Story:</strong> ${linkToPerson(story.name, story.id)}</p>` : ''}
+    `;
+  } else {
+    const creators = content.created_by || [];
+    const director = crew.find(c => c.job === 'Director');
+    const screenplay = crew.find(c => c.job === 'Screenplay');
+
+    extraDetails = `
+      <p><strong>Status:</strong> ${content.status}</p>
+      <p><strong>Seasons:</strong> ${content.number_of_seasons}</p>
+      ${creators.length ? `<p><strong>Creator:</strong> ${creators.map(c => linkToPerson(c.name, c.id)).join(', ')}</p>` : ''}
+      ${director ? `<p><strong>Director:</strong> ${linkToPerson(director.name, director.id)}</p>` : ''}
+      ${screenplay ? `<p><strong>Screenplay:</strong> ${linkToPerson(screenplay.name, screenplay.id)}</p>` : ''}
+    `;
+  }
+
   document.getElementById('contentDetails').innerHTML = `
     <img src="${poster}" class="rounded shadow max-w-full object-cover" alt="${content.title || content.name}">
     <div class="md:col-span-2">
       <h1 class="text-3xl font-bold mb-1">${content.title || content.name}</h1>
       <p class="text-sm italic text-gray-400 mb-4">${content.tagline || ''}</p>
       <p class="text-sm mb-4">${content.overview || 'No description available.'}</p>
-      <p><strong>Genres:</strong> ${content.genres.map(g => g.name).join(', ')}</p>
-      <p><strong>Status:</strong> ${content.status}</p>
-      ${contentType === 'tv' ? `<p><strong>Seasons:</strong> ${content.number_of_seasons}</p>` : ''}
+      <p><strong>Genres:</strong> ${genres}</p>
+      ${extraDetails}
     </div>
   `;
 }
@@ -205,12 +234,12 @@ document.getElementById('closeModal').addEventListener('click', () => {
   document.getElementById('videoModal').classList.add('hidden');
 });
 
-// ✅ Save Continue Watching
+// Save Continue Watching
 function addToContinueWatching(content, type) {
   const data = {
     id: content.id,
     title: content.title || content.name,
-    poster_path: content.poster_path, // just the path, not the full URL
+    poster_path: content.poster_path,
     type,
     timestamp: Date.now()
   };
@@ -223,7 +252,7 @@ function addToContinueWatching(content, type) {
   localStorage.setItem('continueWatching', JSON.stringify(history));
 }
 
-// ✅ Display Continue Watching section
+// Display Continue Watching section
 function renderContinueWatching() {
   const container = document.getElementById('continueWatching');
   const history = JSON.parse(localStorage.getItem('continueWatching')) || [];
@@ -243,19 +272,19 @@ function renderContinueWatching() {
   `).join('');
 }
 
-// ✅ INIT logic (for info.html)
+// INIT logic (for info.html)
 async function init() {
   if (!contentId || !contentType) {
-    renderContinueWatching(); // called on homepage
+    renderContinueWatching();
     return;
   }
 
   const content = await fetchContentDetails(contentType, contentId);
-  renderContentDetails(content);
-  setupTabs(contentType);
+  const credits = await fetchCredits(contentType, contentId);
 
-  const { cast } = await fetchCredits(contentType, contentId);
-  renderCast(cast);
+  renderContentDetails(content, credits.crew || []);
+  setupTabs(contentType);
+  renderCast(credits.cast || []);
 
   const { results } = await fetchRecommendations(contentType, contentId);
   renderRecommended(results);
