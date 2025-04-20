@@ -83,9 +83,17 @@ function renderContentDetails(content) {
       ${contentType === 'tv' ? `<p><strong>Seasons:</strong> ${content.number_of_seasons}</p>` : ''}
     </div>
   `;
+
+  // Save to continue watching
+  saveToContinueWatching({
+    id: contentId,
+    type: contentType,
+    title: content.title || content.name,
+    poster: content.poster_path
+  });
 }
 
-// Render cast (list of actors)
+// Render cast
 function renderCast(cast) {
   const castHTML = cast.slice(0, 12).map(actor => `
     <a href="person.html?id=${actor.id}" class="text-center block hover:scale-105 transition">
@@ -97,10 +105,10 @@ function renderCast(cast) {
   document.getElementById('tab-cast').innerHTML = `<div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">${castHTML}</div>`;
 }
 
-// Render recommended content (movies or TV shows)
+// Render recommended
 function renderRecommended(results) {
   const items = results.slice(0, 8).map(item => `
-    <a href="content.html?type=${contentType}&id=${item.id}" class="rounded shadow overflow-hidden hover:scale-105 transition block">
+    <a href="info.html?type=${contentType}&id=${item.id}" class="rounded shadow overflow-hidden hover:scale-105 transition block">
       <img src="${imageUrl(item.poster_path, 'w342')}" class="w-full aspect-[2/3] object-cover" alt="${item.title || item.name}" />
       <div class="p-2 text-sm text-center">${item.title || item.name}</div>
     </a>
@@ -108,7 +116,7 @@ function renderRecommended(results) {
   document.getElementById('tab-recommended').innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4">${items}</div>`;
 }
 
-// Render source buttons for content
+// Render source buttons
 function renderSourceButtons(sources, containerId) {
   const container = document.getElementById(containerId);
   if (!sources.length) return;
@@ -127,7 +135,7 @@ function renderSourceButtons(sources, containerId) {
   });
 }
 
-// Render default movie source (for movie content)
+// Render default movie source
 function renderDefaultMovieSource(id) {
   const container = document.getElementById('tab-sources');
   container.innerHTML = `
@@ -137,14 +145,14 @@ function renderDefaultMovieSource(id) {
   `;
 }
 
-// Render additional sources message (if no sources are available)
+// Render additional sources message
 function renderAdditionalSourcesMessage() {
   document.getElementById('tab-additional-sources').innerHTML = `
     <div class="text-sm text-gray-400 italic">No Additional Sources Yet</div>
   `;
 }
 
-// Render episodes for TV shows
+// Render episodes
 async function renderEpisodes(tvData) {
   const container = document.getElementById('tab-episodes');
   container.innerHTML = '';
@@ -175,7 +183,7 @@ async function renderEpisodes(tvData) {
   }
 }
 
-// Setup tabs for displaying different sections (e.g., cast, episodes, sources)
+// Setup tabs
 function setupTabs(type) {
   const tabs = document.querySelectorAll('.tab-btn');
   const panels = document.querySelectorAll('.tab-panel');
@@ -207,7 +215,7 @@ function setupTabs(type) {
   document.querySelector('[data-tab="recommended"]').style.display = 'inline-block';
 }
 
-// Open modal to display external content (e.g., streaming)
+// Open modal
 function openModal(url) {
   const videoFrame = document.getElementById('videoFrame');
   videoFrame.src = url;
@@ -220,7 +228,16 @@ document.getElementById('closeModal').addEventListener('click', () => {
   document.getElementById('videoModal').classList.add('hidden');
 });
 
-// Initialize content page
+// Save to Continue Watching
+function saveToContinueWatching(item) {
+  let history = JSON.parse(localStorage.getItem('continueWatching')) || [];
+  history = history.filter(entry => entry.id !== item.id || entry.type !== item.type);
+  history.unshift(item);
+  if (history.length > 20) history = history.slice(0, 20);
+  localStorage.setItem('continueWatching', JSON.stringify(history));
+}
+
+// Init
 async function init() {
   if (!contentId || !contentType) return;
 
