@@ -64,7 +64,7 @@
 
   <script>
 // Load header.html
-fetch('/MN/blob/main/header.html')
+fetch('/MN/header.html')
   .then(res => res.text())
   .then(data => {
     document.getElementById('nav-placeholder').innerHTML = data;
@@ -82,7 +82,7 @@ fetch('/MN/blob/main/header.html')
 });
 
 // Load footer.html
-fetch('/MN/blob/main/footer.html')
+fetch('/MN/footer.html')
   .then(res => res.text())
   .then(data => {
     document.getElementById('footer-placeholder').innerHTML = data;
