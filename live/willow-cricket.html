@@ -64,7 +64,7 @@
 
   <script>
 // Load header.html
-fetch('../header.html')
+fetch('header.html')
   .then(res => res.text())
   .then(data => {
     document.getElementById('nav-placeholder').innerHTML = data;
@@ -82,7 +82,7 @@ fetch('../header.html')
 });
 
 // Load footer.html
-fetch('../footer.html')
+fetch('footer.html')
   .then(res => res.text())
   .then(data => {
     document.getElementById('footer-placeholder').innerHTML = data;
