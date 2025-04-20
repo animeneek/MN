@@ -100,7 +100,7 @@ function renderCast(cast) {
 // Render recommended content (movies or TV shows)
 function renderRecommended(results) {
   const items = results.slice(0, 8).map(item => `
-    <a href="content.html?type=${contentType}&id=${item.id}" class="rounded shadow overflow-hidden hover:scale-105 transition block">
+    <a href="info.html?type=${contentType}&id=${item.id}" class="rounded shadow overflow-hidden hover:scale-105 transition block">
       <img src="${imageUrl(item.poster_path, 'w342')}" class="w-full aspect-[2/3] object-cover" alt="${item.title || item.name}" />
       <div class="p-2 text-sm text-center">${item.title || item.name}</div>
     </a>
