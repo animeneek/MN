@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live TV v19.54</title>
+  <title>Live TV v21.01</title>
   <link rel="icon" href="assets/favicon-image.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -22,6 +22,19 @@
     }
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* Dropdown hover fix */
+    select:hover {
+      border-color: #ff4444;
+    }
+
+    /* Dropdown focus */
+    select:focus {
+      outline: none;
+      border-color: #ff4444;
+      box-shadow: 0 0 0 2px #ff4444;
+    }
+  </style>
 </head>
 <body class="bg-black text-white font-sans">
 
@@ -33,7 +46,7 @@
     <div class="mb-6">
       <div class="w-full bg-darkblock p-4 rounded-lg">
         <div class="aspect-[16/9] overflow-hidden rounded-lg">
-          <iframe id="liveIframe" class="w-full h-full rounded" allowfullscreen></iframe>
+          <iframe id="liveIframe" class="w-full h-full rounded" allowfullscreen src="https://github.com/animeneek/MN/blob/main/assets/Select%20Channel.gif"></iframe>
         </div>
       </div>
     </div>
@@ -41,7 +54,9 @@
     <!-- Channel Picker -->
     <div class="bg-darkblock p-4 rounded-lg">
       <div class="flex flex-col sm:flex-row gap-4">
-        <select id="channelSelect" class="py-2 px-4 bg-darkblock text-white rounded border border-gray-700 flex-grow"></select>
+        <select id="channelSelect" class="py-2 px-4 bg-darkblock text-white rounded border border-gray-700 flex-grow">
+          <option value="" disabled selected>Select Live Channel</option>
+        </select>
         <button id="playBtn" class="py-2 px-4 bg-primary text-white rounded">Play</button>
       </div>
     </div>
@@ -52,6 +67,7 @@
 
   <script>
     const API_KEY = 'e3afd4c89e3351edad9e875ff7a01f0c';
+    const defaultIframeSrc = 'https://github.com/animeneek/MN/blob/main/assets/Select%20Channel.gif';
 
     // Fetch header.html and inject into the nav placeholder
     fetch('header.html')
@@ -108,10 +124,16 @@
 
     function setupPlayButton() {
       const btn = document.getElementById('playBtn');
+      const iframe = document.getElementById('liveIframe');
+      const select = document.getElementById('channelSelect');
+
       btn.addEventListener('click', () => {
-        const selectedKey = document.getElementById('channelSelect').value;
-        const iframe = document.getElementById('liveIframe');
-        iframe.src = sources[selectedKey].src;
+        const selectedKey = select.value;
+        if (selectedKey) {
+          iframe.src = sources[selectedKey].src;
+        } else {
+          iframe.src = defaultIframeSrc; // Reset to default GIF when no channel is selected
+        }
       });
     }
 
