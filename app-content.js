@@ -24,13 +24,10 @@ const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type');
 const contentId = urlParams.get('id');
 
-// Fallback image handler
-function imageUrl(path, size = 'w500') {
-  return path
-    ? `https://image.tmdb.org/t/p/${size}${path}`
-    : 'https://raw.githubusercontent.com/animeneek/MN/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png';
+// Fallback image function
+function imageUrl(path, size = 'w500', fallback = 'https://github.com/animeneek/MN/blob/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png') {
+  return path ? `https://image.tmdb.org/t/p/${size}${path}` : fallback;
 }
-
 
 // Fetch content details (movie or TV)
 async function fetchContentDetails(type, id) {
@@ -55,61 +52,6 @@ async function fetchExternalSources() {
   const res = await fetch('https://raw.githubusercontent.com/animeneek/MovieNeek/main/MovieNeek.json');
   return await res.json();
 }
-
-//mine
-function saveToContinueWatching(content) {
-  const saved = JSON.parse(localStorage.getItem('continueWatching')) || [];
-  const exists = saved.find(item => item.id === content.id && item.media_type === content.media_type);
-  if (!exists) {
-    saved.unshift({
-      id: content.id,
-      title: content.title || content.name || 'Untitled',
-      poster_path: content.poster_path,
-      media_type: content.media_type,
-      release_date: content.release_date || content.first_air_date || '',
-    });
-    if (saved.length > 20) saved.pop();
-    localStorage.setItem('continueWatching', JSON.stringify(saved));
-  }
-}
-
-function renderContinueWatching() {
-  const section = document.getElementById('continueWatching');
-  if (!section) return;
-
-  const saved = JSON.parse(localStorage.getItem('continueWatching')) || [];
-  if (!saved.length) {
-    section.innerHTML = '';
-    return;
-  }
-
-  const cards = saved.map(item => {
-    const img = item.poster_path ? IMG_W500 + item.poster_path : FALLBACK_IMG;
-    return `
-      <div class="rounded overflow-hidden shadow-md bg-[#111] hover:scale-105 transition transform duration-300 cursor-pointer content-card" data-id="${item.id}" data-type="${item.media_type}">
-        <div class="w-full aspect-[2/3] bg-black">
-          <img src="${img}" alt="${item.title}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
-        </div>
-        <div class="p-2 text-sm text-white">
-          <h3 class="font-semibold">${item.title}</h3>
-          <p class="opacity-60 text-xs">${formatDate(item.release_date)}</p>
-        </div>
-      </div>`;
-  }).join('');
-
-  section.innerHTML = `<h2 class="text-lg text-white font-semibold mb-2">Continue Watching</h2>
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">${cards}</div>`;
-
-  document.querySelectorAll('#continueWatching .content-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const id = card.dataset.id;
-      const type = card.dataset.type;
-      window.location.href = `info.html?id=${id}&type=${type}`;
-    });
-  });
-}
-
-
 
 // Get embed URL for the streaming source
 function getEmbedLink(platform, videoId) {
@@ -158,7 +100,7 @@ function renderCast(cast) {
 // Render recommended content (movies or TV shows)
 function renderRecommended(results) {
   const items = results.slice(0, 8).map(item => `
-    <a href="info.html?type=${contentType}&id=${item.id}" class="rounded shadow overflow-hidden hover:scale-105 transition block">
+    <a href="content.html?type=${contentType}&id=${item.id}" class="rounded shadow overflow-hidden hover:scale-105 transition block">
       <img src="${imageUrl(item.poster_path, 'w342')}" class="w-full aspect-[2/3] object-cover" alt="${item.title || item.name}" />
       <div class="p-2 text-sm text-center">${item.title || item.name}</div>
     </a>
@@ -304,7 +246,5 @@ async function init() {
     renderEpisodes(content);
   }
 }
-
-  renderContinueWatching();
 
 document.addEventListener('DOMContentLoaded', init);
