@@ -23,9 +23,13 @@ const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type');
 const contentId = urlParams.get('id');
 
-function imageUrl(path, size = 'w500', fallback = 'https://github.com/animeneek/MN/blob/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png') {
-  return path ? `https://image.tmdb.org/t/p/${size}${path}` : fallback;
+// Fallback image handler
+function imageUrl(path, size = 'w500') {
+  return path
+    ? `https://image.tmdb.org/t/p/${size}${path}`
+    : 'https://raw.githubusercontent.com/animeneek/MN/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png';
 }
+
 
 async function fetchContentDetails(type, id) {
   const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}&language=en-US`);
@@ -208,15 +212,15 @@ function addToContinueWatching(content, type) {
   const data = {
     id: content.id,
     title: content.title || content.name,
-    poster: imageUrl(content.poster_path),
+    poster: imageUrl(content.poster_path), // This ensures fallback logic is applied
     type,
     timestamp: Date.now()
   };
 
   let history = JSON.parse(localStorage.getItem('continueWatching')) || [];
-  history = history.filter(item => item.id !== data.id); // remove duplicate
-  history.unshift(data); // add new at start
-  history = history.slice(0, 20); // keep only latest 20
+  history = history.filter(item => item.id !== data.id); // remove duplicates
+  history.unshift(data); // add to top
+  history = history.slice(0, 20); // max 20 items
 
   localStorage.setItem('continueWatching', JSON.stringify(history));
 }
