@@ -1,6 +1,6 @@
 const API_KEY = 'e3afd4c89e3351edad9e875ff7a01f0c';
 
-// Fetch header.html and inject into the nav placeholder
+// Inject header
 fetch('header.html')
   .then(res => res.text())
   .then(data => {
@@ -23,48 +23,9 @@ fetch('header.html')
 const urlParams = new URLSearchParams(window.location.search);
 const personId = urlParams.get('id');
 
-// Fallback image function
+// Fallback image logic
 function imageUrl(path, size = 'w500', fallback = 'https://raw.githubusercontent.com/animeneek/MN/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png') {
   return path ? `https://image.tmdb.org/t/p/${size}${path}` : fallback;
-}
-
-// Save person to Continue Watching
-function addToContinueWatching(person) {
-  const data = {
-    id: person.id,
-    title: person.name,
-    poster_path: person.profile_path,
-    type: 'person',
-    timestamp: Date.now()
-  };
-
-  let history = JSON.parse(localStorage.getItem('continueWatching')) || [];
-  history = history.filter(item => item.id !== data.id || item.type !== 'person');
-  history.unshift(data);
-  history = history.slice(0, 20);
-
-  localStorage.setItem('continueWatching', JSON.stringify(history));
-}
-
-// Render Continue Watching section
-function renderContinueWatching() {
-  const container = document.getElementById('continueWatching');
-  if (!container) return;
-
-  const history = JSON.parse(localStorage.getItem('continueWatching')) || [];
-  const people = history.filter(item => item.type === 'person');
-
-  if (!people.length) {
-    container.innerHTML = '<p class="text-gray-400 text-sm italic">No people viewed recently.</p>';
-    return;
-  }
-
-  container.innerHTML = people.map(item => `
-    <a href="person.html?id=${item.id}" class="block hover:scale-105 transition">
-      <img src="${imageUrl(item.poster_path)}" class="rounded shadow w-full aspect-[2/3] object-cover" alt="${item.title}" />
-      <p class="text-sm mt-2 text-center font-medium">${item.title}</p>
-    </a>
-  `).join('');
 }
 
 // Fetch person details
@@ -79,7 +40,7 @@ async function fetchCombinedCredits(id) {
   return await res.json();
 }
 
-// Render person details
+// Render person info
 function renderPersonDetails(person) {
   const profile = imageUrl(person.profile_path, 'w500');
   document.getElementById('personDetails').innerHTML = `
@@ -109,7 +70,7 @@ function groupCreditsByDepartment(credits) {
   return grouped;
 }
 
-// Render tabs
+// Render department tabs
 function renderRoleTabs(grouped) {
   const tabContainer = document.getElementById('role-tabs');
   const contentContainer = document.getElementById('role-content');
@@ -141,7 +102,7 @@ function renderRoleTabs(grouped) {
   setupRoleTabEvents();
 }
 
-// Setup tab events
+// Handle tab switching
 function setupRoleTabEvents() {
   const tabButtons = document.querySelectorAll('#role-tabs .tab-btn');
   const panels = document.querySelectorAll('#role-content .tab-panel');
@@ -156,9 +117,60 @@ function setupRoleTabEvents() {
   });
 }
 
-// Initialize page
+// Save to Continue Watching
+function addToContinueWatching(person) {
+  const item = {
+    id: person.id,
+    title: person.name,
+    image: imageUrl(person.profile_path),
+    type: 'person',
+    url: `person.html?id=${person.id}`
+  };
+
+  let history = JSON.parse(localStorage.getItem('continueWatching')) || [];
+  history = history.filter(i => !(i.id === item.id && i.type === 'person'));
+  history.unshift(item);
+  history = history.slice(0, 30);
+  localStorage.setItem('continueWatching', JSON.stringify(history));
+}
+
+// Clean up invalid entries (like movies on person.html)
+function cleanupInvalidPeople() {
+  let history = JSON.parse(localStorage.getItem('continueWatching')) || [];
+  history = history.filter(item => item.type === 'person');
+  localStorage.setItem('continueWatching', JSON.stringify(history));
+}
+
+// Render Continue Watching section
+function renderContinueWatching() {
+  cleanupInvalidPeople();
+
+  const container = document.getElementById('continueWatchingSection');
+  if (!container) return;
+
+  const history = JSON.parse(localStorage.getItem('continueWatching')) || [];
+
+  if (history.length === 0) {
+    container.style.display = 'none';
+    return;
+  }
+
+  const itemsHtml = history.map(item => `
+    <a href="${item.url}" class="rounded overflow-hidden block hover:scale-105 transition">
+      <img src="${item.image}" class="w-full aspect-[2/3] object-cover rounded mb-2" />
+      <div class="text-sm text-center">${item.title}</div>
+    </a>
+  `).join('');
+
+  container.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">${itemsHtml}</div>`;
+}
+
+// Init page
 async function init() {
   if (!personId) return;
+
+  const type = urlParams.get('type');
+  if (type && type !== 'person') return;
 
   const person = await fetchPersonDetails(personId);
   const credits = await fetchCombinedCredits(personId);
@@ -171,4 +183,5 @@ async function init() {
   renderRoleTabs(grouped);
 }
 
+// Run init on DOM ready
 document.addEventListener('DOMContentLoaded', init);
