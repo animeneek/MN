@@ -1,26 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live TV v 20.08</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>Live TV v19.54</title>
+  <link rel="icon" href="assets/favicon-image.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        fontFamily: { sans: ['Poppins', 'sans-serif'] },
+        extend: {
+          colors: {
+            primary: '#ff4444',
+            darkbg: '#000',
+            darkblock: '#222',
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
 </head>
-<body>
+<body class="bg-black text-white font-sans">
 
   <!-- Header -->
   <div id="nav-placeholder"></div>
 
-  <!-- Live Player -->
-  <div class="iframe-container">
-    <iframe id="liveIframe" allowfullscreen></iframe>
-  </div>
+  <main class="max-w-6xl mx-auto px-4 pb-12 mt-6">
+    <!-- Live Player -->
+    <div class="mb-6">
+      <div class="w-full bg-darkblock p-4 rounded-lg">
+        <div class="aspect-[16/9] overflow-hidden rounded-lg">
+          <iframe id="liveIframe" class="w-full h-full rounded" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
 
-  <!-- Channel Picker -->
-  <div>
-    <select id="channelSelect"></select>
-    <button id="playBtn">Play</button>
-  </div>
+    <!-- Channel Picker -->
+    <div class="bg-darkblock p-4 rounded-lg">
+      <div class="flex flex-col sm:flex-row gap-4">
+        <select id="channelSelect" class="py-2 px-4 bg-darkblock text-white rounded border border-gray-700 flex-grow"></select>
+        <button id="playBtn" class="py-2 px-4 bg-primary text-white rounded">Play</button>
+      </div>
+    </div>
+  </main>
 
   <!-- Footer -->
   <div id="footer-placeholder"></div>
