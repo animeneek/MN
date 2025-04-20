@@ -1,6 +1,11 @@
 {
   "willow-cricket": {
     "name": "Willow Cricket",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=willow"
+  },
+  
+  "willow-cricket2": {
+    "name": "Willow Cricket",
     "src": "https://tamashalive.github.io/willow-cricket.html"
   },
   "sky-sports-cricket": {
