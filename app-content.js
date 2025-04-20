@@ -19,6 +19,14 @@ fetch('header.html')
     }
   });
 
+// Inject footer.html
+fetch('footer.html')
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById('footer-placeholder').innerHTML = data;
+  });
+
+
 const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type');
 const contentId = urlParams.get('id');
