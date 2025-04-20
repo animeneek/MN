@@ -28,45 +28,6 @@ function imageUrl(path, size = 'w500', fallback = 'https://raw.githubusercontent
   return path ? `https://image.tmdb.org/t/p/${size}${path}` : fallback;
 }
 
-// Save person to Continue Watching
-function addToContinueWatching(person) {
-  const data = {
-    id: person.id,
-    title: person.name,
-    poster_path: person.profile_path,
-    type: 'person',
-    timestamp: Date.now()
-  };
-
-  let history = JSON.parse(localStorage.getItem('continueWatching')) || [];
-  history = history.filter(item => item.id !== data.id || item.type !== 'person');
-  history.unshift(data);
-  history = history.slice(0, 20);
-
-  localStorage.setItem('continueWatching', JSON.stringify(history));
-}
-
-// Render Continue Watching section
-function renderContinueWatching() {
-  const container = document.getElementById('continueWatching');
-  if (!container) return;
-
-  const history = JSON.parse(localStorage.getItem('continueWatching')) || [];
-  const people = history.filter(item => item.type === 'person');
-
-  if (!people.length) {
-    container.innerHTML = '<p class="text-gray-400 text-sm italic">No people viewed recently.</p>';
-    return;
-  }
-
-  container.innerHTML = people.map(item => `
-    <a href="person.html?id=${item.id}" class="block hover:scale-105 transition">
-      <img src="${imageUrl(item.poster_path)}" class="rounded shadow w-full aspect-[2/3] object-cover" alt="${item.title}" />
-      <p class="text-sm mt-2 text-center font-medium">${item.title}</p>
-    </a>
-  `).join('');
-}
-
 // Fetch person details
 async function fetchPersonDetails(id) {
   const res = await fetch(`https://api.themoviedb.org/3/person/${id}?api_key=${API_KEY}&language=en-US`);
@@ -164,8 +125,6 @@ async function init() {
   const credits = await fetchCombinedCredits(personId);
 
   renderPersonDetails(person);
-  addToContinueWatching(person);
-  renderContinueWatching();
 
   const grouped = groupCreditsByDepartment(credits.cast.concat(credits.crew));
   renderRoleTabs(grouped);
