@@ -62,22 +62,22 @@ function getEmbedLink(platform, videoId) {
   }
 }
 
-// Save to Continue Watching
+// Save to Continue Watching (fixed poster duplication issue)
 function saveToContinueWatching(item) {
   let history = JSON.parse(localStorage.getItem('continueWatching')) || [];
 
-  // Normalize fallback poster
-  const poster = item.poster ? item.poster : null;
+  const normalizedPoster = imageUrl(item.poster); // Normalize the poster here
   const uniqueKey = `${item.id}-${item.type}`;
 
-  // Remove duplicate
+  // Remove duplicates
   history = history.filter(entry => `${entry.id}-${entry.type}` !== uniqueKey);
 
+  // Push new entry
   history.unshift({
     id: item.id,
     type: item.type,
     title: item.title,
-    poster: poster
+    poster: normalizedPoster
   });
 
   if (history.length > 20) history = history.slice(0, 20);
@@ -103,7 +103,7 @@ function renderContentDetails(content) {
     id: contentId,
     type: contentType,
     title: content.title || content.name,
-    poster: content.poster_path
+    poster: content.poster_path // pass raw poster_path here
   });
 }
 
