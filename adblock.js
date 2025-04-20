@@ -1,45 +1,47 @@
-document.addEventListener("DOMContentLoaded", function() {
-    var iframe = document.querySelector("iframe");
-    if (!iframe) return; // Exit if no iframe found
+document.addEventListener("DOMContentLoaded", function () {
+  var iframe = document.querySelector("iframe");
 
-    iframe.onload = function() {
-        try {
-            var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+  if (!iframe) return; // Exit if no iframe found
 
-            function removeAds() {
-                var adSelectors = [
-                    "div.ad", 
-                    "iframe[src*='ad']",
-                    "script[src*='ads']",
-                    "div[id*='banner']",
-                    "div[class*='popup']",
-                    "div[class*='overlay']",
-                    "div[class*='sponsor']",
-                    "div[id*='preload']", 
-                    "div[class*='advertisement']", 
-                    "div[class*='videoAdUi']", 
-                    "video[autoplay]", 
-                    "a[href*='click']", 
-                    "a[target='_blank']"
-                ];
+  iframe.onload = function () {
+    try {
+      var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
 
-                adSelectors.forEach(selector => {
-                    var ads = iframeDocument.querySelectorAll(selector);
-                    ads.forEach(ad => ad.remove());
-                });
+      function removeAds() {
+        // Define more ad selectors
+        var adSelectors = [
+          "div.ad", 
+          "iframe[src*='ad']", 
+          "script[src*='ads']",
+          "div[id*='banner']",
+          "div[class*='popup']",
+          "div[class*='overlay']",
+          "div[class*='sponsor']",
+          "div[id*='preload']", 
+          "div[class*='advertisement']", 
+          "div[class*='videoAdUi']", 
+          "video[autoplay]", 
+          "a[href*='click']", 
+          "a[target='_blank']"
+        ];
 
-                // Disable popups opening in new tabs
-                iframeDocument.body.addEventListener("click", function(event) {
-                    if (event.target.tagName === "A" && event.target.href.includes("ads")) {
-                        event.preventDefault();
-                    }
-                }, true);
-            }
+        adSelectors.forEach(selector => {
+          var ads = iframeDocument.querySelectorAll(selector);
+          ads.forEach(ad => ad.remove());
+        });
 
-            // Run the ad blocker every 1.5 seconds
-            setInterval(removeAds, 1500);
-        } catch (e) {
-            console.warn("Unable to access iframe content due to CORS restrictions.");
-        }
-    };
+        // Disable popups opening in new tabs
+        iframeDocument.body.addEventListener("click", function (event) {
+          if (event.target.tagName === "A" && event.target.href.includes("ads")) {
+            event.preventDefault();
+          }
+        }, true);
+      }
+
+      // Run the ad blocker every 1.5 seconds
+      setInterval(removeAds, 1500);
+    } catch (e) {
+      console.warn("Unable to access iframe content due to CORS restrictions.");
+    }
+  };
 });
