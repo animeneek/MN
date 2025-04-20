@@ -236,9 +236,9 @@ function renderContinueWatching() {
   }
 
   container.innerHTML = history.map(item => `
-    <a href="info.html?type=${item.type}&id=${item.id}" class="block w-28 sm:w-36 hover:scale-105 transition">
+    <a href="info.html?type=${item.type}&id=${item.id}" class="block hover:scale-105 transition">
       <img src="${item.poster}" class="rounded shadow w-full aspect-[2/3] object-cover" alt="${item.title}" />
-      <p class="text-xs mt-1 text-center">${item.title}</p>
+      <p class="text-sm mt-2 text-center font-medium">${item.title}</p>
     </a>
   `).join('');
 }
