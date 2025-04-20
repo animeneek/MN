@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live TV v 19.54</title>
+  <title>Live TV v 20.04</title>
   <style>
     /* Body and General Styles */
     body {
@@ -52,99 +52,35 @@
       opacity: 0.9;
     }
 
-    /* Header Styles */
-    .header-nav {
-      position: relative;
-      background-color: #f7fafc; /* light gray */
-      color: #fff;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      z-index: 10;
-      padding: 0.75rem 1rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
+    /* Header Styles Override for Live Page */
+    #nav-placeholder .header-nav {
+      padding: 0.5rem 1rem;
+    }
+
+    #nav-placeholder .logo-img {
+      height: 3rem; /* Adjust logo size */
+    }
+
+    #nav-placeholder .search-container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    #nav-placeholder .search-input {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 1rem;
     }
 
     @media (min-width: 640px) {
-      .header-nav {
+      #nav-placeholder .header-nav {
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
-        gap: 0;
       }
     }
-
-    /* Logo */
-    .logo-container {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-    }
-
-    @media (min-width: 640px) {
-      .logo-container {
-        justify-content: flex-start;
-        width: auto;
-      }
-    }
-
-    .logo-link {
-      display: flex;
-      align-items: center;
-    }
-
-    .logo-img {
-      height: 1rem; /* 16px for small screens */
-      width: auto;
-    }
-
-    @media (min-width: 640px) {
-      .logo-img {
-        height: 2.5rem; /* 40px for larger screens */
-      }
-    }
-
-    /* Search Bar */
-    .search-container {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-    }
-
-    @media (min-width: 640px) {
-      .search-container {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translateX(-50%) translateY(-50%);
-        width: 60%;
-        max-width: 40rem; /* max width */
-      }
-    }
-
-    .search-input {
-      width: 100%;
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
-      border: 1px solid #fff;
-      background-color: #f7fafc;
-      color: #000;
-      font-size: 1rem;
-      transition: all 0.2s ease-in-out;
-    }
-
-    .search-input:focus {
-      border-color: #ff4444;
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.3);
-    }
-
-    /* Footer Placeholder Styling */
-    #footer-placeholder {
-      margin-top: 20px;
-    }
-
   </style>
 </head>
 <body>
