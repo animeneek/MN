@@ -132,6 +132,9 @@ async function init() {
   const person = await fetchPersonDetails(personId);
   const credits = await fetchCombinedCredits(personId);
 
+  // Set dynamic page title
+  document.title = `${person.name} Info`;
+  
   renderPersonDetails(person);
 
   const grouped = groupCreditsByDepartment(credits.cast.concat(credits.crew));
