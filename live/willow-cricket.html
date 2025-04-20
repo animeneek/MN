@@ -2,61 +2,69 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Willow-Cricket v18.08</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Willow Cricket Live v18.13</title>
   <style>
     body {
-      background: #000;
-      color: #fff;
-      text-align: center;
       margin: 0;
-      font-family: sans-serif;
+      background-color: #000;
+      color: white;
+      font-family: Arial, sans-serif;
     }
+
     .iframe-container {
+      position: relative;
       width: 100%;
       max-width: 1200px;
       height: 600px;
-      margin: 20px auto;
-      position: relative;
+      margin: 40px auto;
     }
+
     iframe {
       width: 100%;
       height: 100%;
       border: none;
     }
+
     button {
+      display: block;
+      margin: 10px auto 40px;
       padding: 10px 20px;
       font-size: 18px;
-      margin: 20px auto;
-      cursor: pointer;
       background: #ff4444;
-      color: #fff;
       border: none;
-      border-radius: 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+    }
+
+    #nav-placeholder, #footer-placeholder {
+      width: 100%;
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
   <div id="nav-placeholder"></div>
 
-  <h2>Willow-Cricket</h2>
+  <h2 style="text-align: center;">Willow Cricket Live Telecast</h2>
 
-  <!-- Embed Container -->
   <div class="iframe-container" id="iframeWrapper">
-    <iframe id="myIframe" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>
+    <iframe
+      id="myIframe"
+      allowfullscreen
+      allow="fullscreen"
+      referrerpolicy="no-referrer"
+    ></iframe>
   </div>
 
   <button onclick="openFullscreen()">Go Fullscreen</button>
 
-  <!-- Footer -->
   <div id="footer-placeholder"></div>
 
-  <!-- Inline Script -->
   <script>
-    // Load header
-    fetch('header.html')
+    // Load header.html
+    fetch('/MN/header.html')
       .then(res => res.text())
       .then(data => {
         document.getElementById('nav-placeholder').innerHTML = data;
@@ -67,48 +75,55 @@
             if (e.key === 'Enter') {
               const query = e.target.value.trim();
               if (query) {
-                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+                window.location.href = `/MN/search.html?q=${encodeURIComponent(query)}`;
               }
             }
           });
         }
       });
 
-    // Load footer
-    fetch('footer.html')
+    // Load footer.html
+    fetch('/MN/footer.html')
       .then(res => res.text())
       .then(data => {
         document.getElementById('footer-placeholder').innerHTML = data;
       });
 
-    // Decode URL and load iframe source
+    // Decode and embed iframe
     function decodeAndLoadIframe() {
       const encodedUrl = "aHR0cHM6Ly90YW1hc2hhbGl2ZS5naXRodWIuaW8vd2lsbG93LWNyaWNrZXQuaHRtbA==";
       const decodedUrl = atob(encodedUrl);
       document.getElementById('myIframe').src = decodedUrl;
     }
 
-    // Fullscreen logic
+    // Fullscreen function
     function openFullscreen() {
-      const iframe = document.getElementById("myIframe");
-      if (iframe.requestFullscreen) {
-        iframe.requestFullscreen();
-      } else if (iframe.mozRequestFullScreen) {
-        iframe.mozRequestFullScreen();
-      } else if (iframe.webkitRequestFullscreen) {
-        iframe.webkitRequestFullscreen();
-      } else if (iframe.msRequestFullscreen) {
-        iframe.msRequestFullscreen();
+      const elem = document.getElementById("iframeWrapper");
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+      } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
       }
     }
 
-    // Block unwanted popups (basic protection)
+    // Block popup windows and prevent redirection
     window.open = function () {
-      console.log("Popup blocked.");
+      console.warn("Blocked an attempt to open a popup.");
       return null;
     };
 
-    // Load iframe when page is ready
+    document.addEventListener("click", function (e) {
+      const target = e.target.closest("a");
+      if (target && target.target === "_blank") {
+        e.preventDefault();
+        console.warn("Blocked external link:", target.href);
+      }
+    });
+
     window.onload = decodeAndLoadIframe;
   </script>
 
