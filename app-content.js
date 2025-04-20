@@ -24,10 +24,13 @@ const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type');
 const contentId = urlParams.get('id');
 
-// Fallback image function
-function imageUrl(path, size = 'w500', fallback = 'https://github.com/animeneek/MN/blob/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png') {
-  return path ? `https://image.tmdb.org/t/p/${size}${path}` : fallback;
+// Fallback image handler
+function imageUrl(path, size = 'w500') {
+  return path
+    ? `https://image.tmdb.org/t/p/${size}${path}`
+    : 'https://raw.githubusercontent.com/animeneek/MN/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png';
 }
+
 
 // Fetch content details (movie or TV)
 async function fetchContentDetails(type, id) {
