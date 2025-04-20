@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Willow Cricket Live v18.57</title>
+  <title>Willow Cricket Live v19.00</title>
   <style>
     body {
       margin: 0;
@@ -38,15 +38,87 @@
       color: white;
     }
 
-    #nav-placeholder, #footer-placeholder {
+    /* Tailwind-like utility styles */
+    .bg-black { background-color: #000; }
+    .bg-gray-100 { background-color: #f3f4f6; }
+    .text-gray-400 { color: #9ca3af; }
+    .text-white { color: #fff; }
+    .dark\:bg-black { background-color: #000; }
+    .dark\:bg-\[\#222\] { background-color: #222; }
+    .dark\:text-white { color: #fff; }
+    .font-semibold { font-weight: 600; }
+    .rounded { border-radius: 0.25rem; }
+    .border { border-width: 1px; }
+    .border-white { border-color: white; }
+    .focus\:ring-2:focus { outline: 2px solid #ff4444; }
+    .focus\:border-\[\#ff4444\]:focus { border-color: #ff4444; }
+
+    input {
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    nav, footer {
       width: 100%;
+    }
+
+    nav {
+      padding: 1rem;
+      background-color: #f3f4f6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    nav.dark {
+      background-color: #000;
+    }
+
+    nav img {
+      height: 40px;
+    }
+
+    nav input {
+      width: 100%;
+      max-width: 600px;
+      padding: 0.5rem 1rem;
+      background-color: #f3f4f6;
+      border: 1px solid white;
+      border-radius: 4px;
+      color: #000;
+    }
+
+    footer {
+      padding: 2rem 1rem;
+      text-align: center;
+      background-color: #000;
+      color: #9ca3af;
+      font-size: 0.875rem;
     }
   </style>
 </head>
 <body>
 
-  <div id="nav-placeholder"></div>
+  <!-- Header -->
+  <nav class="relative bg-gray-100 dark:bg-black shadow z-10 px-4 py-3 flex flex-col items-center sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 dark">
+    <div class="flex-shrink-0 flex justify-center sm:justify-start w-full sm:w-auto">
+      <a href="/MN/index.html" class="flex items-center">
+        <img src="/MN/assets/Movieneek_Raider Crusader_001.png" alt="MovieNeek Logo" class="h-10" />
+      </a>
+    </div>
 
+    <div class="w-full sm:absolute sm:left-1/2 sm:top-1/2 sm:transform sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-[60%] max-w-2xl px-2 sm:px-0">
+      <input 
+        type="text" 
+        id="searchBox" 
+        placeholder="Search..." 
+        class="w-full px-5 py-2 rounded border border-white bg-gray-100 dark:bg-[#222] text-black dark:text-white focus:ring-2 focus:ring-[#ff4444] focus:border-[#ff4444] outline-none transition-all duration-200"
+      />
+    </div>
+  </nav>
+
+  <!-- Main content -->
   <h2 style="text-align: center;">Willow Cricket Live Telecast</h2>
 
   <div class="iframe-container" id="iframeWrapper">
@@ -60,36 +132,28 @@
 
   <button onclick="openFullscreen()">Go Fullscreen</button>
 
-  <div id="footer-placeholder"></div>
+  <!-- Footer -->
+  <footer>
+    <p>This site does not store any files on the server. We only link to media hosted on third-party services.</p>
+    <p>&copy; <span id="year"></span> <span class="text-white font-semibold">MovieNeek</span>. All rights reserved.</p>
+  </footer>
 
   <script>
-    // Load header.html from correct absolute GitHub Pages path
-    fetch('https://animeneek.github.io/MN/header.html')
-      .then(res => res.text())
-      .then(data => {
-        document.getElementById('nav-placeholder').innerHTML = data;
+    // Set year in footer
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-        const searchBox = document.getElementById('searchBox');
-        if (searchBox) {
-          searchBox.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-              const query = e.target.value.trim();
-              if (query) {
-                window.location.href = `https://animeneek.github.io/MN/search.html?q=${encodeURIComponent(query)}`;
-              }
-            }
-          });
+    // Enable search
+    const searchBox = document.getElementById('searchBox');
+    if (searchBox) {
+      searchBox.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          const query = e.target.value.trim();
+          if (query) {
+            window.location.href = `/MN/search.html?q=${encodeURIComponent(query)}`;
+          }
         }
-      })
-      .catch(err => console.error('Error loading header:', err));
-
-    // Load footer.html from correct absolute path
-    fetch('https://animeneek.github.io/MN/footer.html')
-      .then(res => res.text())
-      .then(data => {
-        document.getElementById('footer-placeholder').innerHTML = data;
-      })
-      .catch(err => console.error('Error loading footer:', err));
+      });
+    }
 
     // Decode and embed iframe
     function decodeAndLoadIframe() {
@@ -98,7 +162,7 @@
       document.getElementById('myIframe').src = decodedUrl;
     }
 
-    // Fullscreen function
+    // Fullscreen
     function openFullscreen() {
       const elem = document.getElementById("iframeWrapper");
       if (elem.requestFullscreen) {
@@ -112,7 +176,7 @@
       }
     }
 
-    // Block popup windows and prevent redirection
+    // Block popup windows
     window.open = function () {
       console.warn("Blocked an attempt to open a popup.");
       return null;
