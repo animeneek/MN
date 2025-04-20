@@ -210,7 +210,7 @@ function addToContinueWatching(content, type) {
   const data = {
     id: content.id,
     title: content.title || content.name,
-    poster: imageUrl(content.poster_path), // full URL with fallback
+    poster: imageUrl(content.poster_path || ''), // ✅ Ensure fallback
     type,
     timestamp: Date.now()
   };
