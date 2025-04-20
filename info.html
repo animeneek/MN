@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live TV v20.11</title>
+  <title>Content Details</title>
   <link rel="icon" href="assets/favicon-image.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -29,96 +29,40 @@
   <div id="nav-placeholder"></div>
 
   <main class="max-w-6xl mx-auto px-4 pb-12 mt-6">
-    <!-- Live Player -->
-    <div class="mb-6">
-      <div class="w-full bg-darkblock p-4 rounded-lg">
-        <div class="aspect-[16/9] overflow-hidden rounded-lg">
-          <iframe id="liveIframe" class="w-full h-full rounded" allowfullscreen></iframe>
-        </div>
-      </div>
-    </div>
+    <div id="contentDetails" class="grid md:grid-cols-3 gap-6 mb-6 bg-black p-4 rounded-lg"></div>
 
-    <!-- Channel Picker -->
-    <div class="bg-darkblock p-4 rounded-lg">
-      <div class="flex flex-col sm:flex-row gap-4">
-        <select id="channelSelect" class="py-2 px-4 bg-darkblock text-white rounded border border-gray-700 flex-grow"></select>
-        <button id="playBtn" class="py-2 px-4 bg-primary text-white rounded">Play</button>
+    <div>
+      <div class="flex gap-4 border-b border-gray-700 mb-4 text-sm md:text-base font-medium">
+        <button class="tab-btn" data-tab="sources">Sources</button>
+        <button class="tab-btn" data-tab="episodes" style="display:none;">Episodes</button>
+        <button class="tab-btn" data-tab="additional-sources" style="display:none;">Additional Sources</button>
+        <button class="tab-btn" data-tab="cast">Cast</button>
+        <button class="tab-btn" data-tab="recommended">Recommended</button>
+      </div>
+
+      <div id="tab-content">
+        <div id="tab-sources" class="tab-panel hidden"></div>
+        <div id="tab-episodes" class="tab-panel hidden"></div>
+        <div id="tab-additional-sources" class="tab-panel hidden"></div>
+        <div id="tab-cast" class="tab-panel hidden"></div>
+        <div id="tab-recommended" class="tab-panel hidden"></div>
       </div>
     </div>
   </main>
 
-  <!-- Footer -->
-  <div id="footer-placeholder"></div>
+  <!-- Modal -->
+  <div id="videoModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+    <div class="relative w-full max-w-6xl p-4 bg-black rounded-lg">
+      <button id="closeModal" class="absolute -top-4 -right-4 text-white text-3xl font-bold z-10">×</button>
+      <div class="w-full aspect-[16/9] overflow-hidden rounded-lg">
+        <iframe id="videoFrame" class="w-full h-full rounded" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
 
-  <script>
-    const API_KEY = 'e3afd4c89e3351edad9e875ff7a01f0c';
+    <!-- Footer -->
+    <div id="footer-placeholder"></div>
 
-    // Fetch header.html and inject into the nav placeholder
-    fetch('header.html')
-      .then(res => res.text())
-      .then(data => {
-        document.getElementById('nav-placeholder').innerHTML = data;
-
-        const searchBox = document.getElementById('searchBox');
-        if (searchBox) {
-          searchBox.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-              const query = e.target.value.trim();
-              if (query) {
-                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
-              }
-            }
-          });
-        }
-      })
-      .catch(err => console.error('Error loading header:', err));
-
-    // Inject footer.html
-    fetch('footer.html')
-      .then(res => res.text())
-      .then(data => {
-        document.getElementById('footer-placeholder').innerHTML = data;
-      })
-      .catch(err => console.error('Error loading footer:', err));
-
-    // Load sources.json
-    let sources = {};
-
-    async function loadSources() {
-      const res = await fetch('sources.json');
-      sources = await res.json();
-
-      const select = document.getElementById('channelSelect');
-
-      // Default disabled option
-      const defaultOption = document.createElement('option');
-      defaultOption.disabled = true;
-      defaultOption.selected = true;
-      defaultOption.textContent = 'Select Live Channel';
-      select.appendChild(defaultOption);
-
-      // Add channels
-      for (const key in sources) {
-        const option = document.createElement('option');
-        option.value = key;
-        option.textContent = sources[key].name;
-        select.appendChild(option);
-      }
-    }
-
-    function setupPlayButton() {
-      const btn = document.getElementById('playBtn');
-      btn.addEventListener('click', () => {
-        const selectedKey = document.getElementById('channelSelect').value;
-        const iframe = document.getElementById('liveIframe');
-        iframe.src = sources[selectedKey].src;
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      loadSources();
-      setupPlayButton();
-    });
-  </script>
+  <script defer src="app-content.js"></script>
 </body>
 </html>
