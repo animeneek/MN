@@ -1,10 +1,4 @@
-{
-  "willow-cricket": {
-    "name": "Willow Cricket",
-    "src": "https://tamashalive.github.io/willow-cricket.html"
-  },
-  "sky-sports-cricket": {
-    "name": "Sky Sports Cricket",
-    "src": "https://tamashalive.github.io/sky-sports-cricket.html"
-  }
-}
+const liveSources = {
+  "Willow Cricket": "aHR0cHM6Ly90YW1hc2hhbGl2ZS5naXRodWIuaW8vd2lsbG93LWNyaWNrZXQuaHRtbA==",
+  "Sky Sports Cricket": "aHR0cHM6Ly90YW1hc2hhbGl2ZS5naXRodWIuaW8vc2t5LXNwb3J0cy1jcmlja2V0Lmh0bWw=",
+};
