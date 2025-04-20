@@ -6,7 +6,6 @@ fetch('header.html')
   .then(data => {
     document.getElementById('nav-placeholder').innerHTML = data;
 
-    // Add event listener to search box to handle 'Enter' key
     const searchBox = document.getElementById('searchBox');
     if (searchBox) {
       searchBox.addEventListener('keypress', (e) => {
@@ -29,19 +28,58 @@ function imageUrl(path, size = 'w500', fallback = 'https://raw.githubusercontent
   return path ? `https://image.tmdb.org/t/p/${size}${path}` : fallback;
 }
 
+// Save person to Continue Watching
+function addToContinueWatching(person) {
+  const data = {
+    id: person.id,
+    title: person.name,
+    poster_path: person.profile_path,
+    type: 'person',
+    timestamp: Date.now()
+  };
+
+  let history = JSON.parse(localStorage.getItem('continueWatching')) || [];
+  history = history.filter(item => item.id !== data.id || item.type !== 'person');
+  history.unshift(data);
+  history = history.slice(0, 20);
+
+  localStorage.setItem('continueWatching', JSON.stringify(history));
+}
+
+// Render Continue Watching section
+function renderContinueWatching() {
+  const container = document.getElementById('continueWatching');
+  if (!container) return;
+
+  const history = JSON.parse(localStorage.getItem('continueWatching')) || [];
+  const people = history.filter(item => item.type === 'person');
+
+  if (!people.length) {
+    container.innerHTML = '<p class="text-gray-400 text-sm italic">No people viewed recently.</p>';
+    return;
+  }
+
+  container.innerHTML = people.map(item => `
+    <a href="person.html?id=${item.id}" class="block hover:scale-105 transition">
+      <img src="${imageUrl(item.poster_path)}" class="rounded shadow w-full aspect-[2/3] object-cover" alt="${item.title}" />
+      <p class="text-sm mt-2 text-center font-medium">${item.title}</p>
+    </a>
+  `).join('');
+}
+
 // Fetch person details
 async function fetchPersonDetails(id) {
   const res = await fetch(`https://api.themoviedb.org/3/person/${id}?api_key=${API_KEY}&language=en-US`);
   return await res.json();
 }
 
-// Fetch combined credits (movies/TV shows the person worked on)
+// Fetch combined credits
 async function fetchCombinedCredits(id) {
   const res = await fetch(`https://api.themoviedb.org/3/person/${id}/combined_credits?api_key=${API_KEY}&language=en-US`);
   return await res.json();
 }
 
-// Render person details on the page
+// Render person details
 function renderPersonDetails(person) {
   const profile = imageUrl(person.profile_path, 'w500');
   document.getElementById('personDetails').innerHTML = `
@@ -60,7 +98,7 @@ function renderPersonDetails(person) {
   `;
 }
 
-// Group credits by department (acting, directing, etc.)
+// Group credits by department
 function groupCreditsByDepartment(credits) {
   const grouped = {};
   credits.forEach(credit => {
@@ -71,7 +109,7 @@ function groupCreditsByDepartment(credits) {
   return grouped;
 }
 
-// Render tabs for roles (acting, directing, etc.)
+// Render tabs
 function renderRoleTabs(grouped) {
   const tabContainer = document.getElementById('role-tabs');
   const contentContainer = document.getElementById('role-content');
@@ -103,7 +141,7 @@ function renderRoleTabs(grouped) {
   setupRoleTabEvents();
 }
 
-// Set up event listeners for role tab buttons
+// Setup tab events
 function setupRoleTabEvents() {
   const tabButtons = document.querySelectorAll('#role-tabs .tab-btn');
   const panels = document.querySelectorAll('#role-content .tab-panel');
@@ -118,7 +156,7 @@ function setupRoleTabEvents() {
   });
 }
 
-// Initialize the page by fetching and rendering details
+// Initialize page
 async function init() {
   if (!personId) return;
 
@@ -126,9 +164,11 @@ async function init() {
   const credits = await fetchCombinedCredits(personId);
 
   renderPersonDetails(person);
+  addToContinueWatching(person);
+  renderContinueWatching();
+
   const grouped = groupCreditsByDepartment(credits.cast.concat(credits.crew));
   renderRoleTabs(grouped);
 }
 
-// Execute on DOM ready
 document.addEventListener('DOMContentLoaded', init);
