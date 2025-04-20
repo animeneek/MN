@@ -23,13 +23,11 @@ const urlParams = new URLSearchParams(window.location.search);
 const contentType = urlParams.get('type');
 const contentId = urlParams.get('id');
 
-// Fallback image handler
 function imageUrl(path, size = 'w500') {
   return path
     ? `https://image.tmdb.org/t/p/${size}${path}`
     : 'https://raw.githubusercontent.com/animeneek/MN/main/assets/Black%20and%20White%20Modern%20Coming%20soon%20Poster.png';
 }
-
 
 async function fetchContentDetails(type, id) {
   const res = await fetch(`https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}&language=en-US`);
@@ -207,12 +205,12 @@ document.getElementById('closeModal').addEventListener('click', () => {
   document.getElementById('videoModal').classList.add('hidden');
 });
 
-// ✅ Add to Continue Watching
+// ✅ Save Continue Watching
 function addToContinueWatching(content, type) {
   const data = {
     id: content.id,
     title: content.title || content.name,
-    poster: imageUrl(content.poster_path), // This ensures fallback logic is applied
+    poster: imageUrl(content.poster_path), // full URL with fallback
     type,
     timestamp: Date.now()
   };
@@ -220,13 +218,37 @@ function addToContinueWatching(content, type) {
   let history = JSON.parse(localStorage.getItem('continueWatching')) || [];
   history = history.filter(item => item.id !== data.id); // remove duplicates
   history.unshift(data); // add to top
-  history = history.slice(0, 20); // max 20 items
+  history = history.slice(0, 20); // keep last 20
 
   localStorage.setItem('continueWatching', JSON.stringify(history));
 }
 
+// ✅ Display Continue Watching section
+function renderContinueWatching() {
+  const container = document.getElementById('continueWatching');
+  const history = JSON.parse(localStorage.getItem('continueWatching')) || [];
+
+  if (!container) return;
+
+  if (!history.length) {
+    container.innerHTML = '<p class="text-gray-400 text-sm italic">No items yet.</p>';
+    return;
+  }
+
+  container.innerHTML = history.map(item => `
+    <a href="info.html?type=${item.type}&id=${item.id}" class="block w-28 sm:w-36 hover:scale-105 transition">
+      <img src="${item.poster}" class="rounded shadow w-full aspect-[2/3] object-cover" alt="${item.title}" />
+      <p class="text-xs mt-1 text-center">${item.title}</p>
+    </a>
+  `).join('');
+}
+
+// ✅ INIT logic (for info.html)
 async function init() {
-  if (!contentId || !contentType) return;
+  if (!contentId || !contentType) {
+    renderContinueWatching(); // called on homepage
+    return;
+  }
 
   const content = await fetchContentDetails(contentType, contentId);
   renderContentDetails(content);
@@ -250,7 +272,6 @@ async function init() {
     renderEpisodes(content);
   }
 
-  // ✅ Add to localStorage for continue watching
   addToContinueWatching(content, contentType);
 }
 
