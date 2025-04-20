@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live TV v 20.04</title>
+  <title>Live TV v 19.54</title>
   <style>
     /* Body and General Styles */
     body {
@@ -51,61 +51,12 @@
     button:hover {
       opacity: 0.9;
     }
-
-    /* Header Styles Override for Live Page */
-    #nav-placeholder .header-nav {
-      padding: 0.5rem 1rem;
-    }
-
-    #nav-placeholder .logo-img {
-      height: 3rem; /* Adjust logo size */
-    }
-
-    #nav-placeholder .search-container {
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    #nav-placeholder .search-input {
-      width: 100%;
-      padding: 0.5rem;
-      border-radius: 0.25rem;
-      font-size: 1rem;
-    }
-
-    @media (min-width: 640px) {
-      #nav-placeholder .header-nav {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-      }
-    }
   </style>
 </head>
 <body>
 
   <!-- Header -->
-  <div id="nav-placeholder">
-    <nav class="header-nav">
-      <!-- Logo -->
-      <div class="logo-container">
-        <a href="index.html" class="logo-link">
-          <img src="assets/Movieneek_Raider Crusader_001.png" alt="MovieNeek Logo" class="logo-img">
-        </a>
-      </div>
-
-      <!-- Search Bar -->
-      <div class="search-container">
-        <input 
-          type="text" 
-          id="searchBox" 
-          placeholder="Search..." 
-          class="search-input"
-        />
-      </div>
-    </nav>
-  </div>
+  <div id="nav-placeholder"></div>
 
   <!-- Live Player -->
   <div class="iframe-container">
@@ -122,6 +73,8 @@
   <div id="footer-placeholder"></div>
 
   <script>
+    const API_KEY = 'e3afd4c89e3351edad9e875ff7a01f0c';
+
     // Fetch header.html and inject into the nav placeholder
     fetch('header.html')
       .then(res => res.text())
@@ -139,15 +92,17 @@
             }
           });
         }
-      });
+      })
+      .catch(err => console.error('Error loading header:', err));
 
     // Inject footer.html
     fetch('footer.html')
       .then(res => res.text())
       .then(data => {
         document.getElementById('footer-placeholder').innerHTML = data;
-      });
-    
+      })
+      .catch(err => console.error('Error loading footer:', err));
+
     // Load sources.json
     let sources = {};
 
