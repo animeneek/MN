@@ -210,15 +210,15 @@ function addToContinueWatching(content, type) {
   const data = {
     id: content.id,
     title: content.title || content.name,
-    poster: imageUrl(content.poster_path || ''), // ✅ Ensure fallback
+    poster_path: content.poster_path, // just the path, not the full URL
     type,
     timestamp: Date.now()
   };
 
   let history = JSON.parse(localStorage.getItem('continueWatching')) || [];
-  history = history.filter(item => item.id !== data.id); // remove duplicates
-  history.unshift(data); // add to top
-  history = history.slice(0, 20); // keep last 20
+  history = history.filter(item => item.id !== data.id);
+  history.unshift(data);
+  history = history.slice(0, 20);
 
   localStorage.setItem('continueWatching', JSON.stringify(history));
 }
@@ -237,7 +237,7 @@ function renderContinueWatching() {
 
   container.innerHTML = history.map(item => `
     <a href="info.html?type=${item.type}&id=${item.id}" class="block hover:scale-105 transition">
-      <img src="${item.poster}" class="rounded shadow w-full aspect-[2/3] object-cover" alt="${item.title}" />
+      <img src="${imageUrl(item.poster_path)}" class="rounded shadow w-full aspect-[2/3] object-cover" alt="${item.title}" />
       <p class="text-sm mt-2 text-center font-medium">${item.title}</p>
     </a>
   `).join('');
