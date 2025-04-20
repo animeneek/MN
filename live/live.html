@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live TV</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 1rem;
+    }
+    .iframe-container {
+      width: 100%;
+      max-width: 1200px;
+      height: 600px;
+      margin: 20px auto;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    select, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div id="nav-placeholder"></div>
+
+  <!-- Live Player -->
+  <div class="iframe-container">
+    <iframe id="liveIframe" allowfullscreen></iframe>
+  </div>
+
+  <!-- Channel Picker -->
+  <div>
+    <select id="channelSelect"></select>
+    <button id="playBtn">Play</button>
+  </div>
+
+  <!-- Footer -->
+  <div id="footer-placeholder"></div>
+
+  <script src="app.js"></script>
+  <script>
+    let sources = {};
+
+    async function loadSources() {
+      const res = await fetch('sources.json');
+      sources = await res.json();
+
+      const select = document.getElementById('channelSelect');
+      for (const key in sources) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = sources[key].name;
+        select.appendChild(option);
+      }
+    }
+
+    function setupPlayButton() {
+      const btn = document.getElementById('playBtn');
+      btn.addEventListener('click', () => {
+        const selectedKey = document.getElementById('channelSelect').value;
+        const iframe = document.getElementById('liveIframe');
+        iframe.src = sources[selectedKey].src;
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadSources();
+      setupPlayButton();
+    });
+  </script>
+</body>
+</html>
