@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live TV v 19.40</title>
+  <title>Live TV v19.49</title>
   <style>
     body {
       background-color: #000;
@@ -46,12 +46,12 @@
       opacity: 0.9;
     }
 
-  /* Target the logo from the fetched header */
-  #nav-placeholder .logo img {
-    max-width: 200px;  /* Adjust this to fit your needs */
-    height: auto;
-  }
-
+    /* Override the logo size */
+    #nav-placeholder .flex-shrink-0 img {
+      height: auto; /* Let the height adjust based on width */
+      max-height: 80px; /* Limit the max height */
+      max-width: 100%; /* Ensure the logo doesn't overflow */
+    }
   </style>
 </head>
 <body>
@@ -74,57 +74,55 @@
   <div id="footer-placeholder"></div>
 
   <script>
-// Fetch header.html and inject into the nav placeholder
-fetch('header.html')
-  .then(res => res.text())
-  .then(data => {
-    document.getElementById('nav-placeholder').innerHTML = data;
+    // Fetch header.html and inject into the nav placeholder
+    fetch('header.html')
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById('nav-placeholder').innerHTML = data;
 
-    const searchBox = document.getElementById('searchBox');
-    if (searchBox) {
-      searchBox.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          const query = e.target.value.trim();
-          if (query) {
-            window.location.href = `search.html?q=${encodeURIComponent(query)}`;
-          }
+        const searchBox = document.getElementById('searchBox');
+        if (searchBox) {
+          searchBox.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+              const query = e.target.value.trim();
+              if (query) {
+                window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+              }
+            }
+          });
         }
       });
-    }
-  });
 
-// Inject footer.html
-fetch('footer.html')
-  .then(res => res.text())
-  .then(data => {
-    document.getElementById('footer-placeholder').innerHTML = data;
-  });
+    // Inject footer.html
+    fetch('footer.html')
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById('footer-placeholder').innerHTML = data;
+      });
 
-    
     // Load sources.json
     let sources = {};
+    async function loadSources() {
+      const res = await fetch('sources.json');
+      sources = await res.json();
 
-async function loadSources() {
-  const res = await fetch('sources.json');
-  sources = await res.json();
+      const select = document.getElementById('channelSelect');
 
-  const select = document.getElementById('channelSelect');
+      // Default disabled option
+      const defaultOption = document.createElement('option');
+      defaultOption.disabled = true;
+      defaultOption.selected = true;
+      defaultOption.textContent = 'Select Live Channel';
+      select.appendChild(defaultOption);
 
-  // Default disabled option
-  const defaultOption = document.createElement('option');
-  defaultOption.disabled = true;
-  defaultOption.selected = true;
-  defaultOption.textContent = 'Select Live Channel';
-  select.appendChild(defaultOption);
-
-  // Add channels
-  for (const key in sources) {
-    const option = document.createElement('option');
-    option.value = key;
-    option.textContent = sources[key].name;
-    select.appendChild(option);
-  }
-}
+      // Add channels
+      for (const key in sources) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = sources[key].name;
+        select.appendChild(option);
+      }
+    }
 
     function setupPlayButton() {
       const btn = document.getElementById('playBtn');
