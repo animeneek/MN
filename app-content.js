@@ -60,7 +60,7 @@ function getEmbedLink(platform, videoId) {
 }
 
 function linkToPerson(name, id) {
-  return `<a href="person.html?id=${id}" class="text-blue-500 hover:underline">${name}</a>`;
+  return `<a href="person.html?id=${id}" class="text-[#ff4444] hover:underline">${name}</a>`;
 }
 
 function renderContentDetails(content, crew = []) {
