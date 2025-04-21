@@ -1,15 +1,158 @@
 {
-  "willow-cricket": {
-    "name": "Willow Cricket",
+  "asports": {
+    "name": "A Sports",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=asports"
+  },
+  "astrocric": {
+    "name": "Astrocric",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=astrocric"
+  },
+  "criclife1": {
+    "name": "Criclife1",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=criclife1"
+  },
+  "criclife2": {
+    "name": "Criclife2",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=criclife2"
+  },
+  "eurosport1": {
+    "name": "Eurosport1",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=eurosport1"
+  },
+  "eurosport2": {
+    "name": "Eurosport2",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=eurosport2"
+  },
+  "geosuper": {
+    "name": "Geosuper",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=geosuper"
+  },
+  "viaplaysp1": {
+    "name": "Viaplaysp1",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=viaplaysp1"
+  },
+  "viaplaysp2": {
+    "name": "Viaplaysp2",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=viaplaysp2"
+  },
+  "ptvsp": {
+    "name": "Ptvsp",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=ptvsp"
+  },
+  "skyspsp3": {
+    "name": "Skyspsp3",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=skyspsp3"
+  },
+  "skyarena": {
+    "name": "Skyarena",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=skyarena"
+  },
+  "skyspsp2": {
+    "name": "Skyspsp2",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=skyspsp2"
+  },
+  "skyspsf1": {
+    "name": "Skyspsf1",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=skyspsf1"
+  },
+  "skyfb": {
+    "name": "Sky Football",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=skyfb"
+  },
+  "skyspsp4": {
+    "name": "Skyspsp4",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=skyspsp4"
+  },
+  "skyspsp1": {
+    "name": "Skyspsp1",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=skyspsp1"
+  },
+  "skymix": {
+    "name": "Skymix",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=skymix"
+  },
+  "skyspsp5": {
+    "name": "Skyspsp5",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=skyspsp5"
+  },
+  "skyten": {
+    "name": "Skyten",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=skyten"
+  },
+  "ten1": {
+    "name": "Ten 1",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=ten1"
+  },
+  "ten2": {
+    "name": "Ten 2",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=ten2"
+  },
+  "ten3": {
+    "name": "Ten 3",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=ten3"
+  },
+  "sonysix": {
+    "name": "Sonysix",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=sonysix"
+  },
+  "starspsp": {
+    "name": "Starspsp",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=starspsp"
+  },
+  "starspsp2": {
+    "name": "Starspsp2",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=starspsp2"
+  },
+  "starspsp3": {
+    "name": "Starspsp3",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=starspsp3"
+  },
+  "supersp3": {
+    "name": "Supersp3",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=supersp3"
+  },
+  "osncric": {
+    "name": "Osncric",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=osncric"
+  },
+  "supersp8": {
+    "name": "Supersp8",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=supersp8"
+  },
+  "supersp6": {
+    "name": "Supersp6",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=supersp6"
+  },
+  "supersp10": {
+    "name": "Supersp10",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=supersp10"
+  },
+  "supersp9": {
+    "name": "Supersp9",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=supersp9"
+  },
+  "tensp": {
+    "name": "Tensp",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=tensp"
+  },
+  "btsp1": {
+    "name": "Btsp1",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=btsp1"
+  },
+  "btsp2": {
+    "name": "Btsp2",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=btsp2"
+  },
+  "btsp3": {
+    "name": "Btsp3",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=btsp3"
+  },
+  "btespn": {
+    "name": "Btespn",
+    "src": "https://cdn.crichdplays.ru/embed2.php?id=btespn"
+  },
+  "willow": {
+    "name": "Willow",
     "src": "https://cdn.crichdplays.ru/embed2.php?id=willow"
-  },
-  
-  "willow-cricket2": {
-    "name": "Willow Cricket",
-    "src": "https://tamashalive.github.io/willow-cricket.html"
-  },
-  "sky-sports-cricket": {
-    "name": "Sky Sports Cricket",
-    "src": "https://tamashalive.github.io/sky-sports-cricket.html"
   }
 }
